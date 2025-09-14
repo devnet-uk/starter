@@ -5,12 +5,12 @@
 		"@repo/config": "workspace:*",
 		"@repo/i18n": "workspace:*",
 		"@repo/logs": "workspace:*",
-		"next-intl": "4.3.5",
+		"next-intl": "4.3.8",
 		"nodemailer": "^7.0.6",
 		"react": "19.1.1",
 		"react-dom": "19.1.1",
 		"react-email": "^4.2.8",
-		"use-intl": "^4.3.5"
+		"use-intl": "^4.3.8"
 	},
 	"devDependencies": {
 		"@biomejs/biome": "2.2.2",
