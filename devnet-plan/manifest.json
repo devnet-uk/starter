@@ -1,0 +1,55 @@
+{
+  "version": "0.1.0",
+  "description": "Lightweight plan manifest for context-fetcher to load phase docs with minimal tokens.",
+  "phases": [
+    {
+      "id": "phase-0",
+      "name": "Infrastructure & Project Setup",
+      "path": "devnet-plan/phases/phase-0-infrastructure.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-1",
+      "name": "Core Domain Layer",
+      "path": "devnet-plan/phases/phase-1-domain.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-2",
+      "name": "Use Cases & Business Logic",
+      "path": "devnet-plan/phases/phase-2-use-cases.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-3",
+      "name": "Infrastructure Layer",
+      "path": "devnet-plan/phases/phase-3-infrastructure.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-4",
+      "name": "Interface Adapters",
+      "path": "devnet-plan/phases/phase-4-interface-adapters.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-5",
+      "name": "Presentation Layer",
+      "path": "devnet-plan/phases/phase-5-presentation.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-6",
+      "name": "Deployment & Launch",
+      "path": "devnet-plan/phases/phase-6-deployment.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-7",
+      "name": "Documentation & Optimization",
+      "path": "devnet-plan/phases/phase-7-documentation.md",
+      "summary_anchor": "overview"
+    }
+  ]
+}
+

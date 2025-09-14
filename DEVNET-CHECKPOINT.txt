@@ -1,0 +1,8 @@
+LAST_COMPLETED: None
+NEXT_ACTION: Start Phase 0, Step 1 - Repository Infrastructure Specification
+CURRENT_FILE: devnet-plan/phases/phase-0-infrastructure.md
+WORKING_DIRECTORY: ~/Projects/devnet.clean_architecture/ (Engineering OS standards repo)
+STANDARDS_DIRECTORY: ~/Projects/devnet.clean_architecture/ (Engineering OS standards)
+GIT_TAG: none
+COVERAGE: Not started
+NOTE: Planning artefacts reset to Phase 0, Step 1.

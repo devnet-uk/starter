@@ -42,3 +42,5 @@ dist/
 # other 
 .react-email/
 .content-collections/
+
+.eos-backups/

@@ -1,0 +1,26 @@
+# Canonical status source for devnet execution (template)
+# Use this file to drive DEVNET-CHECKPOINT.txt and DEVNET-PROGRESS.md
+
+project: devnet
+working_directory: ~/Projects/devnet
+
+phase:
+  id: phase-0
+  name: Infrastructure & Project Setup
+  status: not_started  # one of: not_started, in_progress, blocked, complete
+  step: 1              # current step number within the phase
+
+verification:
+  last_run: null       # ISO date when verification last ran
+  blocking_failures: 0 # integer count of blocking failures
+
+notes:
+  - "Initialize repository and workspace per Phase 0"
+  - "Run /execute-tasks to trigger verification (blocking)"
+
+history:
+  # Optional chronological log of key transitions or fixes
+  - date: 2025-09-10
+    event: "setup"
+    detail: "Created devnet repository structure"
+
