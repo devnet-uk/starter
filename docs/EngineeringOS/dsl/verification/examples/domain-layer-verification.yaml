@@ -1,0 +1,230 @@
+# Domain Layer Verification Tests
+# Relocated from docs/standards/verification to docs/EngineeringOS/dsl/verification/examples (authoring guidance examples)
+# Ensures domain layer maintains framework independence
+
+version: "1.0"
+description: "Automated verification tests for domain layer purity and Clean Architecture compliance"
+
+# Domain Layer Purity Verifications
+verifications:
+  - name: "no_framework_imports_in_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'from.*drizzle\\|from.*@hono\\|from.*next\\|from.*express\\|from.*prisma\\|from.*typeorm' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not import frameworks. Found framework imports in domain files. Move framework code to infrastructure layer."
+    DEPENDS_ON: []
+
+  - name: "no_database_imports_in_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'from.*pg\\|from.*redis\\|from.*mongodb\\|from.*mysql\\|from.*sqlite' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not import database clients. Use repository interfaces instead."
+    DEPENDS_ON: []
+
+  - name: "no_http_imports_in_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'from.*axios\\|from.*fetch\\|from.*request\\|from.*http' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not import HTTP clients. Handle HTTP in application or infrastructure layer."
+    DEPENDS_ON: []
+
+  - name: "no_external_service_imports_in_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'from.*aws-sdk\\|from.*@aws\\|from.*stripe\\|from.*sendgrid\\|from.*twilio' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not import external service SDKs. Use interfaces and implement in infrastructure layer."
+    DEPENDS_ON: []
+
+  - name: "result_pattern_used_consistently"
+    TEST: "find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'Result<' {} + | wc -l | awk '{print ($1 >= 1)}' | grep -q 1"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must use Result<T> pattern for error handling. Import Result from domain/shared/Result."
+    DEPENDS_ON: []
+
+  - name: "domain_entities_extend_base_classes"
+    TEST: "find packages/*/src/domain packages/core/src/domain -path '*/entities/*.ts' -exec grep -l 'extends Entity\\|extends AggregateRoot' {} + | wc -l | awk '{print ($1 >= 1)}' | grep -q 1"
+    REQUIRED: false
+    VARIABLES: []
+    ERROR: "Domain entities should extend Entity or AggregateRoot base classes for consistency."
+    DEPENDS_ON: []
+
+  - name: "value_objects_extend_base_class"
+    TEST: "find packages/*/src/domain packages/core/src/domain -path '*/value-objects/*.ts' -exec grep -l 'extends ValueObject' {} + | wc -l | awk '{print ($1 >= 1)}' | grep -q 1"
+    REQUIRED: false
+    VARIABLES: []
+    ERROR: "Value objects should extend ValueObject base class for consistent equality semantics."
+    DEPENDS_ON: []
+
+  - name: "domain_events_extend_base_class"
+    TEST: "find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'extends DomainEvent' {} + | wc -l | awk '{print ($1 >= 1)}' | grep -q 1"
+    REQUIRED: false
+    VARIABLES: []
+    ERROR: "Domain events should extend DomainEvent base class for consistent event handling."
+    DEPENDS_ON: []
+
+  - name: "no_console_logs_in_production_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'console\\.log\\|console\\.error\\|console\\.warn\\|console\\.info\\|console\\.debug' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not contain console statements. Use proper logging interfaces or remove debug code."
+    DEPENDS_ON: []
+
+  - name: "no_database_schema_methods_in_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'dbSchema\\|dbType\\|pgTable\\|sqliteTable\\|mysqlTable\\|toDatabaseFormat\\|fromDatabase\\|static.*schema.*=' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not contain database schema definitions or mapping methods. Move all database concerns to infrastructure layer mappers."
+    DEPENDS_ON: []
+
+  - name: "no_sql_keywords_in_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'SELECT\\|INSERT\\|UPDATE\\|DELETE\\|CREATE TABLE\\|ALTER TABLE\\|sql`' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not contain SQL statements. Use repository interfaces and implement queries in infrastructure layer."
+    DEPENDS_ON: []
+
+  - name: "no_transaction_methods_in_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'transaction\\|withTransaction\\|\\.tx\\|beginTransaction' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not handle database transactions. Transaction management belongs in infrastructure layer."
+    DEPENDS_ON: []
+
+  - name: "no_orm_query_methods_in_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'from.*eq\\|from.*and\\|from.*or\\|from.*lte\\|from.*gte\\|from.*like' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not import ORM query methods. Use repository interfaces for data access."
+    DEPENDS_ON: []
+
+  - name: "domain_interfaces_in_correct_location"
+    TEST: "find packages/*/src/domain packages/core/src/domain -name 'I*.ts' -path '*/interfaces/*' | wc -l | awk '{print ($1 >= 0)}' | grep -q 1"
+    REQUIRED: false
+    VARIABLES: []
+    ERROR: "Domain interfaces should be in domain/interfaces/ directory for clear organization."
+    DEPENDS_ON: []
+
+  - name: "no_any_types_in_domain"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l ': any\\|<any>\\|any\\[\\]\\|Array<any>' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must use proper TypeScript typing. Replace 'any' with specific types."
+    DEPENDS_ON: []
+
+  - name: "domain_folder_structure_correct"
+    TEST: "test -d packages/core/src/domain && test -d packages/core/src/domain/entities && test -d packages/core/src/domain/value-objects && test -d packages/core/src/domain/shared"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must have proper folder structure: domain/{entities,value-objects,shared,services,interfaces}"
+    DEPENDS_ON: []
+
+  - name: "domain_utilities_available"
+    TEST: "test -f packages/core/src/domain/shared/Result.ts && test -f packages/core/src/domain/shared/Entity.ts && test -f packages/core/src/domain/shared/ValueObject.ts"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain utilities missing. Ensure Result.ts, Entity.ts, ValueObject.ts exist in domain/shared/"
+    DEPENDS_ON: []
+
+  - name: "no_business_logic_in_controllers"
+    TEST: "! find packages/*/src/controllers packages/*/src/presentation -name '*.ts' -exec grep -l 'if.*business.*rule\\|switch.*status\\|calculate.*total\\|validate.*email' {} +"
+    REQUIRED: false
+    VARIABLES: []
+    ERROR: "Controllers should not contain business logic. Move business rules to domain services or entities."
+    DEPENDS_ON: []
+
+  - name: "repository_interfaces_in_domain"
+    TEST: "find packages/*/src/domain packages/core/src/domain -name '*Repository.ts' -path '*/interfaces/*' | wc -l | awk '{print ($1 >= 1)}' | grep -q 1"
+    REQUIRED: false
+    VARIABLES: []
+    ERROR: "Repository interfaces should be defined in domain layer, implementations in infrastructure."
+    DEPENDS_ON: []
+
+  # Test Coverage Requirements
+  - name: "domain_layer_test_coverage"
+    TEST: "if command -v npm >/dev/null 2>&1; then npm run test:coverage --silent | grep -q 'domain.*100%' || echo 'Coverage check skipped - no test:coverage script'; else echo 'Coverage check skipped - npm not available'; fi"
+    REQUIRED: false
+    VARIABLES: []
+    ERROR: "Domain layer should have 100% test coverage due to its critical business logic."
+    DEPENDS_ON: []
+
+  - name: "domain_tests_are_unit_tests"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.test.ts' -o -name '*.spec.ts' | xargs grep -l 'beforeAll\\|afterAll\\|database\\|db\\.' 2>/dev/null || true"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain tests must be pure unit tests with no database or external dependencies."
+    DEPENDS_ON: []
+
+  # Architecture Boundary Enforcement
+  - name: "domain_layer_isolated"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l '../infrastructure\\|../presentation\\|../api' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not reference outer layers (infrastructure, presentation, api)."
+    DEPENDS_ON: []
+
+  - name: "circular_dependencies_check"
+    TEST: "if command -v madge >/dev/null 2>&1; then ! madge --circular packages/core/src/domain/; else echo 'Circular dependency check skipped - madge not available'; fi"
+    REQUIRED: false
+    VARIABLES: []
+    ERROR: "Domain layer must not have circular dependencies. Refactor to break cycles."
+    DEPENDS_ON: []
+
+  - name: "domain_utilities_properly_imported"
+    TEST: "find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'extends.*ValueObject\\|extends.*Entity\\|extends.*AggregateRoot' {} + | xargs grep -l \"from.*shared\" 2>/dev/null | wc -l | awk '{print ($1 >= 0)}' | grep -q 1 || echo 'No base class usage found'"
+    REQUIRED: false
+    VARIABLES: []
+    ERROR: "Domain classes extending base classes should import from domain/shared utilities."
+    DEPENDS_ON: []
+
+  - name: "no_value_object_database_methods"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -path '*/value-objects/*.ts' -exec grep -l 'static.*db\\|\.dbType\\|\.dbSchema\\|toPersistence\\|fromPersistence' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Value objects must not contain database mapping methods. Use infrastructure layer mappers for persistence concerns."
+    DEPENDS_ON: []
+
+  - name: "no_entity_database_methods"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -path '*/entities/*.ts' -exec grep -l 'toDatabaseFormat\\|fromDatabaseFormat\\|toRow\\|fromRow\\|static.*table\\|static.*schema' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain entities must not contain database mapping methods. Use infrastructure layer mappers for persistence concerns."
+    DEPENDS_ON: []
+
+  - name: "mappers_only_in_infrastructure"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*Mapper.ts' -o -name '*mapper.ts'"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Mappers belong in infrastructure layer only. Move all mapper classes to packages/infrastructure/src/mappers/"
+    DEPENDS_ON: []
+
+  - name: "no_direct_database_imports"
+    TEST: "! find packages/*/src/domain packages/core/src/domain -name '*.ts' -exec grep -l 'from.*@/lib/db\\|from.*lib/db\\|from.*database' {} +"
+    REQUIRED: true
+    VARIABLES: []
+    ERROR: "Domain layer must not import database modules directly. Use dependency injection with repository interfaces."
+    DEPENDS_ON: []
+
+# Project-Specific Variables
+common_variables:
+  DOMAIN_COVERAGE_THRESHOLD:
+    type: "integer"
+    default: 100
+    description: "Required test coverage percentage for domain layer"
+  
+  ALLOWED_DOMAIN_DEPENDENCIES:
+    type: "array"
+    default: ["zod", "date-fns"]
+    description: "Whitelist of allowed external dependencies in domain layer"
+
+# Integration with Engineering OS
+execution_rules:
+  run_on_pre_commit: true
+  run_on_pre_push: true
+  fail_fast: true
+  parallel_execution: true
+
+reporting:
+  format: "detailed"
+  include_suggestions: true
+  group_by_category: true

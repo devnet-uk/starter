@@ -1,44 +1,32 @@
-# Repository Guidelines
+# AGENTS Guidance for devnet.starter
 
-## Project Structure & Module Organization
-- Monorepo managed by `pnpm` + `turbo`.
-- Apps: `apps/web` (Next.js 15 app, Playwright tests in `apps/web/tests`).
-- Packages: reusable libraries under `packages/*` (published internally as `@repo/<name>`), e.g. `api`, `auth`, `database`, `i18n`, `mail`, `utils`.
-- Config: shared runtime/types in `config/` (see `config/index.ts`, `config/types.ts`).
-- Tooling: shared TypeScript and Tailwind presets in `tooling/typescript/*` and `tooling/tailwind/*`.
+These instructions apply to the entire repository unless overridden by a more deeply nested AGENTS.md.
 
-## Build, Test, and Development Commands
-- Install: `pnpm install` (Node >= 20; packageManager pinned in `package.json`).
-- Dev (all): `pnpm dev` (runs `turbo dev` with env via `dotenv`).
-- Dev (single app): `pnpm --filter @repo/web dev`.
-- Build: `pnpm build` (pipeline via Turbo + env). Start: `pnpm start`.
-- Lint: `pnpm lint` (Biome). Format: `pnpm format`.
-- E2E (UI): `pnpm --filter @repo/web e2e`. CI/headless: `pnpm --filter @repo/web e2e:ci`.
-- Database codegen (if used): `pnpm --filter @repo/database generate`.
+## Scope & Priorities
+- Primary purpose: use Engineering OS commands and standards to plan and implement features with verifications.
+- Always consult standards starting at `docs/standards/standards.md` (root dispatcher). Use ≤3 routing hops; do not bypass dispatchers.
 
-## Content & Docs
-- Content Collections can be disabled if dev crashes in constrained envs:
-  - Set `DISABLE_CONTENT_COLLECTIONS=1` in `apps/web/.env.local`.
-  - Remove the var to re-enable live content generation.
+## Commands & Execution
+- Commands live in `.claude/commands/` and are executed as slash commands in your AI IDE (e.g., Claude Code, Cursor).
+- Core commands:
+  - `/plan-product` – creates docs/product/{mission.md, mission-lite.md, tech-stack.md, roadmap.md}
+  - `/analyze-product` – onboards an existing codebase, then runs plan-product
+  - `/create-spec`, `/create-tasks`, `/execute-tasks` – feature planning → tasks → implementation
+- Step execution is sequential; delegate to subagents as specified in command files.
 
-## Coding Style & Naming Conventions
-- Formatting/linting via Biome; respect `.editorconfig` (tabs, width 4, LF, final newline).
-- Language: TypeScript strict (`tooling/typescript/base.json`). Prefer types over `any`.
-- Naming: files `kebab-case.ts`; React components `PascalCase.tsx`; types/interfaces `PascalCase`; constants `UPPER_SNAKE_CASE`.
-- Imports: prefer `@repo/<pkg>` aliases; avoid deep relative paths across package boundaries.
+## Standards Loading Rules (MANDATORY)
+- Start at `docs/standards/standards.md`.
+- Load only content where `<conditional-block task-condition>` matches the current task intent.
+- Keep dispatcher files routing-only; standards files contain guidance.
+- Keep `context-check` IDs unique.
 
-## Testing Guidelines
-- Framework: Playwright in `apps/web` (`apps/web/playwright.config.ts`).
-- Place specs under `apps/web/tests`, name `*.spec.ts`.
-- Add/adjust E2E when changing routes, auth, or critical flows.
-- Ensure `pnpm lint` and `pnpm --filter @repo/web e2e:ci` pass locally before PRs.
+## Verification
+- Use `verification-runner` as invoked by commands; defaults to blocking.
+- Local utilities:
+  - `node scripts/validate-standards.mjs` – validate standards structure
+  - `node scripts/verification-shim.mjs --files=docs/standards/development/git-workflow.md --mode=blocking`
+- Governance: deny network by default; safe, non-destructive commands in tests.
 
-## Commit & Pull Request Guidelines
-- Commits: follow Conventional Commits (e.g., `feat(web): add profile page`, `fix(auth): refresh token expiry`).
-- PRs: include clear description, scope, and rationale; link issues; add screenshots for UI changes; note env/config impacts.
-- Required checks: Biome (`pnpm lint`) and E2E run in CI (`.github/workflows/validate-prs.yml`). Keep PRs focused and small.
-
-## Security & Configuration Tips
-- Copy `.env.local.example` → `.env.local` and set secrets; never commit secrets.
-- Env is injected via `dotenv` in scripts; verify required vars for features you touch (auth, storage, payments).
-- Database uses Drizzle ORM; Prisma is not used.
+## Safety & Changes
+- Non-destructive by default; prompt for destructive actions.
+- Maintain existing file organization and anchors; use relative paths for internal links.

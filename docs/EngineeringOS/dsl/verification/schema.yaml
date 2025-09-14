@@ -1,0 +1,190 @@
+# Engineering OS Verification Schema
+# Relocated from docs/standards/verification to docs/EngineeringOS/dsl/verification (authoring guidance)
+# Defines the structure for verification blocks within standards
+
+version: "1.0"
+description: "Schema for verification blocks in Engineering OS standards"
+
+# Verification Block Structure
+verification_block:
+  # DSL Integration
+  type: "conditional-block"
+  parent: "standard"
+  
+  # Required attributes
+  attributes:
+    task-condition: 
+      description: "Keywords that trigger verification loading"
+      format: "pipe-separated-keywords"
+      examples: ["verify|validation|check|quality-gate", "pre-commit|husky|hooks"]
+      
+    context-check:
+      description: "Unique identifier to prevent duplicate loading"
+      format: "verification-{unique-descriptor}"
+      examples: ["verification-pre-commit", "verification-coverage-gates"]
+      required: true
+      global_unique: true
+
+# Verification Definition Structure  
+verification_definitions:
+  type: "object"
+  properties:
+    test:
+      description: "Individual verification test"
+      properties:
+        name:
+          type: "string"
+          description: "Unique test identifier (snake_case)"
+          pattern: "^[a-z][a-z0-9_]*$"
+          required: true
+          
+        TEST:
+          type: "string" 
+          description: "Shell command to execute"
+          required: true
+          examples:
+            - "test -f .husky/pre-commit"
+            - "grep -q 'coverage.*${PROJECT_COVERAGE}' package.json"
+            - "npm run lint --silent"
+            
+        REQUIRED:
+          type: "boolean"
+          description: "Whether test must pass for verification success"
+          default: true
+          
+        VARIABLES:
+          type: "array"
+          items:
+            type: "string"
+            pattern: "^[A-Z][A-Z0-9_]*$"
+          description: "Template variables used in TEST command"
+          examples: [["PROJECT_COVERAGE"], ["PROJECT_TYPE", "PROJECT_NAME"]]
+          
+        ERROR:
+          type: "string"
+          description: "Error message when test fails (supports variable substitution)"
+          required: true
+          examples:
+            - "Missing .husky/pre-commit hook"
+            - "Coverage threshold not set to ${PROJECT_COVERAGE}%"
+            
+        DEPENDS_ON:
+          type: "array"
+          items:
+            type: "string"
+          description: "Other tests that must pass before this test runs"
+          examples: [["husky_installed"], ["package_json_exists", "coverage_script_exists"]]
+
+# Common Variable Definitions
+common_variables:
+  PROJECT_COVERAGE:
+    type: "integer"
+    range: [0, 100]
+    description: "Test coverage percentage requirement"
+    extraction_patterns:
+      - '\b(\d{1,3})%?\s*coverage\b'
+      - 'coverage.*threshold.*(\d{1,3})'
+    defaults:
+      standard: 80
+      greenfield: 98
+      legacy: 70
+      
+  PROJECT_TYPE:
+    type: "string"
+    enum: ["standard", "greenfield", "legacy", "migration"]
+    description: "Project type affecting verification requirements"
+    extraction_patterns:
+      - '\b(greenfield|legacy|migration)\b'
+    default: "standard"
+    
+  PROJECT_NAME:
+    type: "string"
+    description: "Project name from package.json or directory"
+    extraction_sources:
+      - "package.json:name"
+      - "directory_name"
+      
+  GIT_HOOKS:
+    type: "array"
+    items:
+      type: "string"
+      enum: ["pre-commit", "commit-msg", "pre-push", "post-commit"]
+    description: "Required git hooks"
+    extraction_patterns:
+      - '\b(pre-commit|commit-msg|pre-push)\b'
+    default: ["pre-commit", "commit-msg"]
+    
+  PROJECT_PHASES:
+    type: "boolean"
+    description: "Whether project uses phased development"
+    extraction_patterns:
+      - '\b(phase|phased)\b'
+    default: false
+
+# Verification Execution Rules
+execution_rules:
+  order: "dependency-based"  # Run tests based on DEPENDS_ON
+  parallel: true  # Run independent tests in parallel
+  timeout: 30  # Maximum seconds per test
+  error_handling: "continue-on-optional-fail"  # Continue if REQUIRED=false
+  variable_substitution: "before-execution"
+  
+  failure_behavior:
+    required_test_fails: "abort-verification"
+    optional_test_fails: "warn-and-continue" 
+    dependency_fails: "skip-dependent-tests"
+    timeout_exceeded: "treat-as-failure"
+
+# Integration with Engineering OS DSL
+dsl_integration:
+  conditional_block_compatibility: true
+  hierarchical_routing: true
+  context_caching: true
+  surgical_loading: true
+  
+  agent_coordination:
+    extraction_agent: "context-fetcher"
+    execution_agent: "verification-runner"
+    reporting_agent: "verification-runner"
+    
+  command_integration:
+    create_spec: "extract-verifications-step"
+    execute_tasks: "verify-implementation-step"
+
+# Performance Requirements
+performance:
+  max_verification_extraction_time: "100ms"
+  max_variable_substitution_time: "50ms"
+  max_test_execution_time: "5s"
+  max_total_verification_time: "30s"
+  context_overhead: "<10%"
+
+# Error Message Standards
+error_message_standards:
+  format: "descriptive-with-fix-suggestion"
+  variables: "substituted-before-display"
+  length: "1-2-sentences"
+  tone: "helpful-actionable"
+  
+  examples:
+    good:
+      - "Missing .husky/pre-commit hook. Run 'husky install' to set up git hooks."
+      - "Coverage threshold not set to 98%. Update package.json coverage:check script."
+    bad:
+      - "Test failed"
+      - "Command returned non-zero exit code"
+
+# Validation Rules
+validation_rules:
+  unique_test_names: "within-verification-block"
+  unique_context_checks: "globally-across-all-standards"
+  valid_shell_commands: "syntax-check-recommended"
+  variable_references: "must-be-declared-in-VARIABLES"
+  dependency_cycles: "not-allowed"
+  
+# File Locations
+file_locations:
+  schema: "docs/EngineeringOS/dsl/verification/schema.yaml"
+  examples: "docs/EngineeringOS/dsl/verification/examples/"
+  tests: ".claude/tests/verification-tests/"
+  documentation: "docs/EngineeringOS/dsl/verification/authoring-guide.md"
