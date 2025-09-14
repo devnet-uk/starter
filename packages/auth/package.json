@@ -1,0 +1,25 @@
+{
+	"dependencies": {
+		"@repo/config": "workspace:*",
+		"@repo/database": "workspace:*",
+		"@repo/i18n": "workspace:*",
+		"@repo/logs": "workspace:*",
+		"@repo/mail": "workspace:*",
+		"@repo/payments": "workspace:*",
+		"@repo/utils": "workspace:*",
+		"better-auth": "1.3.7",
+		"cookie": "^1.0.2"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "2.2.2",
+		"@repo/tsconfig": "workspace:*",
+		"@types/node": "^24.3.1"
+	},
+	"main": "./index.ts",
+	"name": "@repo/auth",
+	"scripts": {
+		"type-check": "tsc --noEmit"
+	},
+	"types": "./**/.tsx",
+	"version": "0.0.0"
+}

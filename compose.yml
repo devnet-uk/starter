@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    ports:
+      - '5432:5432'
+    environment:
+      - POSTGRES_DB=devnet_dev_db
+      - POSTGRES_USER=devnet_dev_user
+      - POSTGRES_PASSWORD=devnet_pwd
+    volumes:
+      - dev-db:/var/lib/postgresql/data
+    networks:
+      - dev-network
+volumes:
+  dev-db:
+    driver: local
+networks:
+  dev-network:
+    driver: bridge
