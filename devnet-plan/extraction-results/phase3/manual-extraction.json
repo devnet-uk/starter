@@ -1,0 +1,346 @@
+{
+  "version": "1.0.0", 
+  "timestamp": "2025-01-29T19:10:00.000Z",
+  "project": "devnet.clean_architecture",
+  "phase": "Phase 3: Manual Business Logic & Operational Extraction",
+  "executiveSummary": {
+    "operationalComplexity": "high",
+    "businessRulesDepth": "extensive",
+    "migrationChallenges": "medium-high",
+    "primaryFindings": [
+      "Complex Next.js middleware with multi-layered business rules",
+      "Server actions for localization state management", 
+      "Intricate authorization patterns across multiple contexts",
+      "Sophisticated billing and onboarding workflows"
+    ]
+  },
+  "businessWorkflows": [
+    {
+      "name": "Application Access Control Workflow",
+      "location": "apps/web/middleware.ts:15-117",
+      "description": "Multi-stage authentication and authorization pipeline",
+      "businessRules": [
+        "SaaS mode must be enabled for /app access",
+        "Unauthenticated users redirected to login with return path",
+        "Incomplete onboarding blocks app access (except /app/onboarding)",
+        "Organization membership required when organizations.requireOrganization = true",
+        "Active billing plan required unless free plan exists",
+        "Locale synchronization between session and cookies"
+      ],
+      "complexity": "high",
+      "decisionPoints": [
+        {
+          "condition": "!appConfig.ui.saas.enabled",
+          "action": "Redirect to marketing site", 
+          "line": 21
+        },
+        {
+          "condition": "!session",
+          "action": "Redirect to login with redirectTo parameter",
+          "line": 28
+        },
+        {
+          "condition": "onboarding enabled && !onboardingComplete",
+          "action": "Force onboarding workflow",
+          "line": 39
+        },
+        {
+          "condition": "organizations required && no active org",
+          "action": "Redirect to organization selection or creation",
+          "line": 63
+        },
+        {
+          "condition": "billing required && no active plan && not on exempt path",
+          "action": "Redirect to plan selection",
+          "line": 106
+        }
+      ],
+      "migrationConsiderations": [
+        "Middleware contains core business logic that should be in use cases",
+        "Multiple external dependencies (session, organizations, purchases)",
+        "Complex conditional logic that needs to be testable in isolation",
+        "Configuration-driven behavior that affects business rules"
+      ]
+    },
+    {
+      "name": "Billing Validation Workflow", 
+      "location": "apps/web/middleware.ts:83-114",
+      "description": "Subscription and payment plan enforcement",
+      "businessRules": [
+        "Organizations and users both support billing independently", 
+        "Free plans exempt from billing validation",
+        "Active organization context determines billing scope",
+        "Specific paths allowed without valid billing plan",
+        "Purchase validation using helper utilities"
+      ],
+      "complexity": "medium-high",
+      "dependencies": [
+        "getPurchasesForSession() - external service call",
+        "createPurchasesHelper() - business logic utility",
+        "organization context from session",
+        "configuration-driven plan definitions"
+      ]
+    },
+    {
+      "name": "Organization Context Management",
+      "location": "apps/web/middleware.ts:63-81", 
+      "description": "Dynamic organization routing and context switching",
+      "businessRules": [
+        "Active organization from session takes precedence",
+        "Fall back to first available organization",
+        "Force organization creation if none exist", 
+        "URL slug-based organization routing"
+      ],
+      "complexity": "medium",
+      "stateManagement": "Session-based with database lookup for organization list"
+    },
+    {
+      "name": "Internationalization State Management",
+      "location": "apps/web/modules/i18n/lib/update-locale.ts + middleware.ts:55-60",
+      "description": "Locale synchronization between user preferences and cookies",
+      "businessRules": [
+        "User locale preference overrides cookie locale",
+        "Default locale used when user has no preference",
+        "Cookie updated automatically on locale mismatch",
+        "Server actions trigger cache revalidation"
+      ],
+      "complexity": "low",
+      "serverAction": {
+        "name": "updateLocale",
+        "location": "apps/web/modules/i18n/lib/update-locale.ts:7-10",
+        "behavior": "Updates locale cookie and revalidates root path cache"
+      }
+    }
+  ],
+  "authorizationPatterns": [
+    {
+      "pattern": "Dual Context Authorization",
+      "description": "Resources belong to either users OR organizations with different access controls",
+      "implementations": [
+        {
+          "location": "packages/api/src/routes/ai.ts:104-111",
+          "logic": "if (organizationId) verify membership, else verify user ownership"
+        },
+        {
+          "location": "packages/api/src/routes/payments/router.ts:198-211", 
+          "logic": "Purchase access requires organization owner role OR direct user ownership"
+        }
+      ],
+      "businessRules": [
+        "Organization resources require active membership",
+        "Personal resources require direct ownership",
+        "Some operations (billing) require specific roles (owner)",
+        "Context switching affects authorization scope"
+      ]
+    },
+    {
+      "pattern": "Role-Based Access Control",
+      "description": "Organization membership includes role-based permissions",
+      "implementations": [
+        {
+          "location": "packages/api/src/routes/organizations/lib/membership.ts:4-20",
+          "logic": "Membership verification returns organization and role information"
+        },
+        {
+          "location": "packages/api/src/routes/payments/router.ts:204-206",
+          "logic": "Only organization 'owner' role can access billing portal"
+        }
+      ],
+      "roles": [
+        "owner - full organization control including billing",
+        "member - basic organization access",
+        "admin - elevated permissions (role system extensible)"
+      ]
+    },
+    {
+      "pattern": "Feature Flag Authorization", 
+      "description": "Configuration-driven feature access control",
+      "implementations": [
+        {
+          "location": "apps/web/middleware.ts:21-23",
+          "logic": "SaaS features disabled redirects to marketing site"
+        },
+        {
+          "location": "apps/web/middleware.ts:40-42",
+          "logic": "Onboarding feature flag controls workflow enforcement"
+        }
+      ],
+      "flags": [
+        "ui.saas.enabled - controls SaaS application access",
+        "users.enableOnboarding - enforces onboarding completion",
+        "organizations.enable - enables organization features",
+        "organizations.requireOrganization - forces organization membership"
+      ]
+    }
+  ],
+  "operationalPatterns": [
+    {
+      "pattern": "Configuration-Driven Business Logic",
+      "description": "Core business rules controlled by configuration rather than code",
+      "examples": [
+        {
+          "config": "appConfig.ui.saas.enabled",
+          "impact": "Determines if SaaS features are accessible"
+        },
+        {
+          "config": "appConfig.organizations.requireOrganization", 
+          "impact": "Forces organization membership for app access"
+        },
+        {
+          "config": "appConfig.payments.plans with isFree property",
+          "impact": "Exempts users from billing requirements"
+        }
+      ],
+      "migrationRisk": "Configuration changes affect business logic behavior"
+    },
+    {
+      "pattern": "Middleware-Based Business Rules",
+      "description": "Core business logic embedded in Next.js middleware",
+      "violations": [
+        "Authentication logic in infrastructure layer",
+        "Billing validation in web framework", 
+        "Organization routing in middleware",
+        "Onboarding workflow in request processing"
+      ],
+      "cleanArchitectureIssues": [
+        "Business rules depend on Next.js framework",
+        "Use cases embedded in infrastructure",
+        "Domain logic mixed with HTTP processing"
+      ]
+    },
+    {
+      "pattern": "Session-Based State Management",
+      "description": "User and organization context maintained in session storage",
+      "stateElements": [
+        "session.user - authenticated user information",
+        "session.session.activeOrganizationId - current organization context",
+        "cookies - locale and other preferences",
+        "database queries - organization memberships and purchases"
+      ],
+      "complexity": "Session state combined with database lookups for complete context"
+    }
+  ],
+  "hiddenComplexities": [
+    {
+      "area": "Organization Context Switching",
+      "description": "Active organization affects billing, permissions, and routing",
+      "locations": [
+        "Session activeOrganizationId tracking",
+        "Middleware organization resolution",
+        "Purchase context determination"
+      ],
+      "businessImpact": "Users can switch between personal and organizational contexts"
+    },
+    {
+      "area": "Billing Plan Hierarchy",
+      "description": "Complex plan validation with organization vs user billing",
+      "rules": [
+        "Organization billing takes precedence when enabled",
+        "User billing falls back when organization billing disabled", 
+        "Free plans exempt from validation entirely",
+        "Specific paths allowed without active billing"
+      ]
+    },
+    {
+      "area": "Onboarding State Machine",
+      "description": "Progressive user onboarding with workflow enforcement",
+      "states": [
+        "new user - requires onboarding",
+        "onboarding in progress - restricted access",
+        "onboarding complete - full access",
+        "organization required - additional workflow"
+      ]
+    }
+  ],
+  "integrationPatterns": [
+    {
+      "integration": "Better-Auth Session Management",
+      "pattern": "Session-based authentication with custom enrichment",
+      "businessLogic": [
+        "User purchase data enhancement",
+        "Organization context injection",
+        "Locale preference synchronization"
+      ]
+    },
+    {
+      "integration": "Next.js Server Actions",
+      "pattern": "Server-side state updates with cache invalidation",
+      "usage": "Locale updates trigger full page revalidation"
+    },
+    {
+      "integration": "Configuration System",
+      "pattern": "Runtime business rule configuration",
+      "impact": "Business logic behavior controlled by external configuration"
+    }
+  ],
+  "migrationChallenges": [
+    {
+      "challenge": "Middleware Business Logic Extraction",
+      "description": "Complex business rules embedded in Next.js middleware",
+      "approach": "Extract to use case layer with middleware adapter pattern",
+      "complexity": "high - affects request processing pipeline"
+    },
+    {
+      "challenge": "Configuration-Driven Logic",
+      "description": "Business rules controlled by configuration system",
+      "approach": "Create configuration-aware use cases with dependency injection",
+      "complexity": "medium - requires careful abstraction"
+    },
+    {
+      "challenge": "Dual Context Authorization",
+      "description": "User/organization context switching affects all operations",
+      "approach": "Create context-aware authorization use cases",
+      "complexity": "medium-high - touches all business operations"
+    },
+    {
+      "challenge": "State Management Distribution",
+      "description": "Context spread across session, cookies, and database",
+      "approach": "Centralize context management in domain services",
+      "complexity": "medium - requires careful state consolidation"
+    }
+  ],
+  "extractionFindings": {
+    "totalFeatures": 436,
+    "featureDistribution": {
+      "businessLogic": 223,
+      "components": 120, 
+      "integrations": 44,
+      "api": 27,
+      "configuration": 22
+    },
+    "complexityDistribution": {
+      "low": 385,
+      "medium": 32,
+      "high": 19
+    },
+    "highComplexityFeatures": [
+      "ActiveOrganizationProvider - organization context management",
+      "LoginForm - authentication with multiple states", 
+      "OrganizationMembersBlock - complex organization UI",
+      "SessionProvider - core authentication state",
+      "UserMenu - complex user interface integration"
+    ]
+  },
+  "nextPhaseInputs": {
+    "migrationSequence": [
+      "Extract middleware business logic to use cases",
+      "Create configuration-aware domain services",
+      "Implement dual-context authorization layer",
+      "Migrate complex React components to clean patterns",
+      "Establish proper dependency injection for external services"
+    ],
+    "validationTargets": [
+      "Authentication and authorization workflows",
+      "Billing and subscription validation",
+      "Organization context switching",
+      "Onboarding progression workflows",
+      "Internationalization state management"
+    ],
+    "riskAreas": [
+      "Next.js middleware business logic extraction",
+      "Session state management migration",
+      "Configuration-driven business rule preservation",
+      "Complex React component state management"
+    ]
+  }
+}

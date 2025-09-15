@@ -1,0 +1,352 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2025-01-29T19:00:00.000Z",
+  "project": "devnet.clean_architecture",
+  "phase": "Phase 2: Interface Adapters & Infrastructure Mapping",
+  "executiveSummary": {
+    "adapterComplexity": "medium-high",
+    "currentArchitecture": "controller-heavy with embedded business logic",
+    "extractionReadiness": "good",
+    "primaryFindings": [
+      "Clean HTTP handling with HonoJS framework",
+      "Consistent middleware patterns for auth and validation",
+      "Business logic mixed within controllers",
+      "Good external service integration patterns"
+    ]
+  },
+  "interfaceAdapters": {
+    "controllers": [
+      {
+        "name": "AI Chat Controller",
+        "location": "packages/api/src/routes/ai.ts",
+        "responsibilities": [
+          "HTTP request/response handling for AI chat operations",
+          "Request validation with Zod schemas",
+          "Authorization checks (dual context: user/organization)",
+          "AI streaming response management",
+          "OpenAPI documentation generation"
+        ],
+        "businessLogicEmbedded": [
+          "Chat ownership verification (lines 104-111)",
+          "Organization membership authorization",
+          "Message streaming with persistence callbacks",
+          "Conversation state management"
+        ],
+        "extractionComplexity": "high - streaming logic intertwined with HTTP handling"
+      },
+      {
+        "name": "Payments Controller", 
+        "location": "packages/api/src/routes/payments/router.ts",
+        "responsibilities": [
+          "Checkout link generation",
+          "Customer portal access",
+          "Purchase authorization and retrieval",
+          "Payment provider integration coordination"
+        ],
+        "businessLogicEmbedded": [
+          "Seat-based pricing calculations (lines 136-139)",
+          "Trial period determination (lines 123-126)",
+          "Purchase ownership verification (lines 198-211)",
+          "Customer ID resolution logic"
+        ],
+        "extractionComplexity": "medium - complex pricing logic mixed with HTTP"
+      },
+      {
+        "name": "Organization Controller",
+        "location": "packages/api/src/routes/organizations/router.ts",
+        "responsibilities": [
+          "Slug generation for organizations",
+          "Uniqueness validation",
+          "URL-safe identifier creation"
+        ],
+        "businessLogicEmbedded": [
+          "Slug conflict resolution algorithm (lines 31-40)",
+          "Retry logic with nanoid fallback"
+        ],
+        "extractionComplexity": "low - simple business rules"
+      }
+    ],
+    "middleware": [
+      {
+        "name": "Authentication Middleware",
+        "location": "packages/api/src/middleware/auth.ts",
+        "responsibilities": [
+          "Session validation via Better-Auth",
+          "User context injection into request",
+          "Session context injection",
+          "HTTP 401 responses for unauthorized requests"
+        ],
+        "framework": "HonoJS middleware with Better-Auth integration",
+        "extractionComplexity": "low - clean framework integration"
+      }
+    ],
+    "presenters": {
+      "status": "implicit",
+      "description": "Response formatting handled by controller return statements",
+      "patterns": [
+        "Direct JSON responses from controllers",
+        "HTTP exception throwing for errors",
+        "OpenAPI schema definitions for response structure"
+      ],
+      "missingPatterns": [
+        "Dedicated presenter classes",
+        "Response transformation layers", 
+        "View model generation"
+      ]
+    },
+    "validators": [
+      {
+        "name": "Request Validation",
+        "framework": "Zod schemas with hono-openapi",
+        "locations": [
+          "AI chat message validation",
+          "Payment parameters validation",
+          "Organization slug generation validation"
+        ],
+        "strength": "Type-safe validation with automatic OpenAPI generation"
+      }
+    ]
+  },
+  "infrastructure": {
+    "databaseAdapters": [
+      {
+        "name": "Drizzle ORM Layer",
+        "location": "packages/database/drizzle/",
+        "components": {
+          "client": "packages/database/drizzle/client.ts",
+          "schema": "packages/database/drizzle/schema/postgres.ts",
+          "queries": "packages/database/drizzle/queries/*.ts",
+          "migrations": "packages/database/drizzle/migrations/"
+        },
+        "businessLogicLeakage": [
+          "User creation logic in queries/users.ts",
+          "Organization membership verification",
+          "Purchase status calculations"
+        ],
+        "extractionComplexity": "medium - query functions contain business rules"
+      }
+    ],
+    "externalServiceAdapters": [
+      {
+        "name": "Authentication Service",
+        "framework": "Better-Auth",
+        "location": "packages/auth/auth.ts",
+        "integration": "Session-based auth with provider support",
+        "businessLogic": [
+          "User purchase data enrichment (lines 101, 111)",
+          "Session organization context"
+        ]
+      },
+      {
+        "name": "AI Service",
+        "framework": "@repo/ai package",
+        "integration": "Text streaming with persistence callbacks",
+        "complexity": "Async streaming with state management"
+      },
+      {
+        "name": "Payment Service",
+        "framework": "@repo/payments package",
+        "integration": "Checkout and portal link generation",
+        "businessLogic": [
+          "Customer ID resolution",
+          "Seat-based pricing",
+          "Trial period handling"
+        ]
+      },
+      {
+        "name": "Configuration Service",
+        "framework": "@repo/config package", 
+        "usage": "Payment plans and application settings"
+      },
+      {
+        "name": "Logging Service",
+        "framework": "@repo/logs package",
+        "usage": "Error logging and application monitoring"
+      }
+    ],
+    "utilities": [
+      {
+        "name": "Organization Membership Verification",
+        "location": "packages/api/src/routes/organizations/lib/membership.ts",
+        "purpose": "Authorization utility for organization-scoped operations",
+        "businessLogic": "Membership validation and role extraction",
+        "usage": "Used across AI chat and payment endpoints"
+      },
+      {
+        "name": "Purchase Operations",
+        "location": "packages/api/src/routes/payments/lib/purchases.ts",
+        "purpose": "Purchase data retrieval and filtering",
+        "businessLogic": "User vs organization purchase context"
+      }
+    ]
+  },
+  "frameworksAndDrivers": {
+    "webFramework": {
+      "name": "HonoJS",
+      "version": "4.9.4+",
+      "features": [
+        "Type-safe request/response handling",
+        "Middleware composition",
+        "OpenAPI integration",
+        "Request validation with Zod"
+      ],
+      "strengths": [
+        "Clean API design",
+        "Good TypeScript integration", 
+        "Consistent patterns across routes"
+      ]
+    },
+    "database": {
+      "name": "Drizzle ORM",
+      "database": "PostgreSQL 17.6",
+      "features": [
+        "Type-safe database operations",
+        "Migration management",
+        "Query builder with SQL-like syntax",
+        "Relation handling"
+      ]
+    },
+    "authentication": {
+      "name": "Better-Auth",
+      "version": "1.3.7+",
+      "features": [
+        "Multiple auth provider support",
+        "Session management",
+        "User enrichment capabilities",
+        "TypeScript integration"
+      ]
+    }
+  },
+  "architecturalPatterns": {
+    "requestResponseFlow": {
+      "pattern": "Middleware → Controller → Database → Response",
+      "description": "Linear request processing without clear separation of concerns",
+      "issues": [
+        "Business logic embedded in controllers",
+        "Direct database calls from controllers",
+        "Authorization logic scattered across routes"
+      ]
+    },
+    "errorHandling": {
+      "pattern": "HTTP exceptions and try-catch blocks",
+      "consistency": "Mixed - some routes use HTTPException, others return error objects",
+      "missingPatterns": [
+        "Centralized error handling middleware",
+        "Domain-specific error types",
+        "Error transformation layers"
+      ]
+    },
+    "authorizationPattern": {
+      "pattern": "Dual-context authorization (user/organization)",
+      "implementation": "Scattered verification calls throughout controllers",
+      "strength": "Consistent pattern recognition",
+      "weakness": "No centralized authorization layer"
+    }
+  },
+  "migrationOpportunities": {
+    "controllerSimplification": {
+      "opportunity": "Extract business logic from controllers",
+      "approach": "Move business rules to use case layer",
+      "benefits": [
+        "Cleaner HTTP handling",
+        "Easier testing of business logic",
+        "Better separation of concerns"
+      ],
+      "complexity": "Medium - requires careful extraction of embedded logic"
+    },
+    "presenterPattern": {
+      "opportunity": "Implement explicit presenter layer",
+      "approach": "Create response transformation classes",
+      "benefits": [
+        "Consistent response formats",
+        "Easier API versioning",
+        "Cleaner controller code"
+      ],
+      "complexity": "Low - mostly structural changes"
+    },
+    "middlewareExpansion": {
+      "opportunity": "Centralize cross-cutting concerns in middleware",
+      "candidates": [
+        "Authorization verification",
+        "Request logging",
+        "Error handling",
+        "Response transformation"
+      ],
+      "complexity": "Low to Medium"
+    },
+    "gatewayPattern": {
+      "opportunity": "Create API gateways for external service integration",
+      "services": [
+        "Payment service gateway",
+        "AI service gateway", 
+        "Authentication service gateway"
+      ],
+      "benefits": [
+        "Consistent external service handling",
+        "Easier mocking and testing",
+        "Better error handling patterns"
+      ]
+    }
+  },
+  "cleanArchitectureMapping": {
+    "currentLayers": {
+      "controllers": {
+        "status": "present but business-logic-heavy",
+        "locations": "packages/api/src/routes/**/*.ts",
+        "violations": [
+          "Business logic embedded in HTTP handlers",
+          "Direct database calls from controllers",
+          "Authorization mixed with HTTP handling"
+        ]
+      },
+      "presenters": {
+        "status": "implicit/missing",
+        "current": "Direct JSON responses from controllers",
+        "needed": "Explicit response transformation layer"
+      },
+      "gateways": {
+        "status": "partial",
+        "present": "Database query functions act as repositories",
+        "missing": [
+          "External service gateways",
+          "Interface definitions for adapters",
+          "Dependency inversion for external services"
+        ]
+      }
+    },
+    "dependencyDirection": {
+      "violations": [
+        "Controllers depend on database implementation",
+        "Business logic depends on HTTP framework", 
+        "Use cases mixed with infrastructure concerns"
+      ],
+      "correctPatterns": [
+        "Middleware properly encapsulates framework concerns",
+        "External service packages provide clean abstractions"
+      ]
+    }
+  },
+  "nextPhaseInputs": {
+    "featureExtractionTargets": [
+      "AI chat streaming workflow with authorization",
+      "Payment processing with seat-based pricing",
+      "Organization slug generation with conflict resolution",
+      "Dual-context authorization patterns",
+      "Purchase ownership verification workflows"
+    ],
+    "businessLogicLocations": [
+      "Seat calculation logic in payment controller",
+      "Chat authorization in AI routes",
+      "Slug generation algorithm",
+      "Purchase access control",
+      "Membership verification patterns"
+    ],
+    "infrastructureDependencies": [
+      "Better-Auth session management",
+      "Drizzle ORM database operations",
+      "AI SDK streaming capabilities",
+      "Payment provider integrations",
+      "Configuration management system"
+    ]
+  }
+}

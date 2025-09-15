@@ -1,0 +1,484 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2025-01-29T19:20:00.000Z",
+  "project": "devnet.clean_architecture",
+  "phase": "Phase 4: Validation Strategy & Quality Assurance",
+  "executiveSummary": {
+    "validationApproach": "Multi-layered verification with automated and manual testing",
+    "riskLevel": "low-medium",
+    "automationCoverage": "85%",
+    "primaryStrategy": "Prevent regressions while validating architectural compliance",
+    "validationDuration": "Continuous throughout migration + 1 week final validation"
+  },
+  "validationLayers": {
+    "layer1_unitTesting": {
+      "description": "Validate individual components and use cases in isolation",
+      "coverage": "95% for business logic",
+      "tools": ["Vitest", "React Testing Library", "@testing-library/jest-dom"],
+      "testTypes": [
+        {
+          "type": "Use Case Unit Tests",
+          "description": "Validate business logic without external dependencies",
+          "examples": [
+            "ValidateAppAccessUseCase with different user states",
+            "StreamAiResponseUseCase with mocked AI service",
+            "CreateCheckoutLinkUseCase with pricing scenarios"
+          ],
+          "coverage": "All use cases must have 100% branch coverage"
+        },
+        {
+          "type": "Domain Model Tests",
+          "description": "Verify entity behavior and business rules",
+          "examples": [
+            "User.canAccessOrganization() with various membership states",
+            "Organization.validateBilling() with different plan types",
+            "AiChat.authorize() with user/organization contexts"
+          ]
+        },
+        {
+          "type": "Service Unit Tests", 
+          "description": "Validate domain services independently",
+          "examples": [
+            "AuthorizationService dual-context logic",
+            "BillingValidationService plan validation",
+            "OrganizationContextService context resolution"
+          ]
+        }
+      ]
+    },
+    "layer2_integrationTesting": {
+      "description": "Validate interaction between architectural layers",
+      "coverage": "90% of integration points",
+      "testTypes": [
+        {
+          "type": "Controller-UseCase Integration",
+          "description": "Verify controllers properly delegate to use cases",
+          "scenarios": [
+            "AI chat endpoints use AuthorizeAiChatAccessUseCase",
+            "Payment endpoints use CreateCheckoutLinkUseCase",
+            "Organization endpoints use GenerateOrganizationSlugUseCase"
+          ]
+        },
+        {
+          "type": "Middleware-UseCase Integration",
+          "description": "Validate middleware delegates to authentication use cases",
+          "scenarios": [
+            "App access validation through ValidateAppAccessUseCase",
+            "Billing validation through ValidateBillingPlanUseCase",
+            "Organization context resolution"
+          ]
+        },
+        {
+          "type": "Database-Repository Integration",
+          "description": "Verify data persistence layer works with domain models",
+          "scenarios": [
+            "User operations maintain data consistency",
+            "Organization membership updates",
+            "AI chat message persistence"
+          ]
+        }
+      ]
+    },
+    "layer3_systemTesting": {
+      "description": "End-to-end validation of complete user workflows",
+      "coverage": "All critical user journeys",
+      "tools": ["Playwright E2E", "Custom API testing"],
+      "testScenarios": [
+        {
+          "scenario": "Complete Authentication Flow",
+          "steps": [
+            "Unauthenticated user accesses /app",
+            "Redirected to login with return path",
+            "Successful authentication",
+            "Onboarding completion (if required)",
+            "Organization context establishment",
+            "App access granted"
+          ],
+          "validation": "All middleware business logic works via use cases"
+        },
+        {
+          "scenario": "AI Chat Workflow",
+          "steps": [
+            "User creates new AI chat",
+            "Sends message with streaming response",
+            "Organization context chat creation",
+            "Authorization validation",
+            "Message persistence"
+          ],
+          "validation": "Streaming logic works with extracted use cases"
+        },
+        {
+          "scenario": "Payment Processing Flow",
+          "steps": [
+            "User initiates checkout",
+            "Seat-based pricing calculation", 
+            "Organization vs personal billing context",
+            "Customer portal access",
+            "Billing plan validation"
+          ],
+          "validation": "Complex pricing logic works after extraction"
+        },
+        {
+          "scenario": "Organization Management",
+          "steps": [
+            "Create organization with slug generation",
+            "Add members with role assignment",
+            "Context switching between organizations",
+            "Billing context updates"
+          ],
+          "validation": "Organization business logic preserved"
+        }
+      ]
+    },
+    "layer4_performanceTesting": {
+      "description": "Validate performance characteristics are maintained or improved",
+      "benchmarks": "Current production metrics as baseline",
+      "testTypes": [
+        {
+          "type": "API Response Times",
+          "description": "Ensure no performance degradation after use case extraction",
+          "targets": [
+            "AI chat endpoints: <200ms response time",
+            "Authentication validation: <50ms",
+            "Organization operations: <100ms"
+          ]
+        },
+        {
+          "type": "Database Query Performance",
+          "description": "Verify query patterns remain efficient",
+          "areas": [
+            "User lookup and organization membership queries",
+            "Purchase validation queries",
+            "AI chat message retrieval"
+          ]
+        },
+        {
+          "type": "Memory Usage",
+          "description": "Monitor memory consumption with additional layers",
+          "target": "No more than 10% increase in memory usage"
+        }
+      ]
+    }
+  },
+  "automatedValidation": {
+    "continuousIntegration": {
+      "description": "Automated validation on every commit",
+      "pipeline": [
+        {
+          "stage": "Code Quality",
+          "tools": ["BiomeJS", "TypeScript compiler"],
+          "validation": [
+            "Code formatting compliance",
+            "Type safety validation", 
+            "Lint rule compliance",
+            "Import organization"
+          ]
+        },
+        {
+          "stage": "Unit Testing",
+          "command": "pnpm test:unit",
+          "requirements": [
+            "95% code coverage for use cases",
+            "100% branch coverage for business logic",
+            "All domain model tests passing"
+          ]
+        },
+        {
+          "stage": "Integration Testing", 
+          "command": "pnpm test:integration",
+          "requirements": [
+            "All API endpoints functional",
+            "Database operations successful",
+            "External service mocks working"
+          ]
+        },
+        {
+          "stage": "Build Validation",
+          "command": "pnpm build",
+          "requirements": [
+            "All packages build successfully",
+            "No circular dependencies",
+            "Type exports working correctly"
+          ]
+        }
+      ]
+    },
+    "deploymentValidation": {
+      "description": "Pre-deployment validation suite", 
+      "stages": [
+        {
+          "stage": "Smoke Tests",
+          "duration": "5 minutes",
+          "tests": [
+            "Application starts successfully",
+            "Database connections established",
+            "External service connectivity",
+            "Authentication system operational"
+          ]
+        },
+        {
+          "stage": "Critical Path Testing",
+          "duration": "15 minutes", 
+          "tests": [
+            "User can login and access app",
+            "AI chat functionality works",
+            "Payment processing functions",
+            "Organization operations succeed"
+          ]
+        }
+      ]
+    }
+  },
+  "manualValidation": {
+    "architecturalReview": {
+      "description": "Human validation of architectural compliance",
+      "reviewers": "Senior developers and architects",
+      "checkpoints": [
+        {
+          "checkpoint": "Clean Architecture Compliance",
+          "criteria": [
+            "Use cases contain only business logic",
+            "Controllers delegate to use cases without business logic",
+            "Dependency direction follows Clean Architecture rules",
+            "Domain models are independent of infrastructure"
+          ]
+        },
+        {
+          "checkpoint": "Code Quality Review",
+          "criteria": [
+            "Business logic is testable in isolation",
+            "Error handling is consistent across layers",
+            "Type safety is maintained throughout",
+            "Code complexity is manageable"
+          ]
+        }
+      ]
+    },
+    "businessLogicValidation": {
+      "description": "Subject matter expert validation of business rules",
+      "validators": "Product team and business stakeholders",
+      "scenarios": [
+        {
+          "scenario": "Authentication Business Rules",
+          "validation": [
+            "Onboarding workflows behave correctly",
+            "Organization requirements enforced properly",
+            "Billing validation logic preserved",
+            "Session management functions as expected"
+          ]
+        },
+        {
+          "scenario": "Authorization Patterns",
+          "validation": [
+            "User vs organization context switching works",
+            "Role-based permissions enforced",
+            "Resource ownership validation correct",
+            "Admin impersonation capabilities preserved"
+          ]
+        }
+      ]
+    }
+  },
+  "regressionPrevention": {
+    "baselineCapture": {
+      "description": "Capture current system behavior before migration",
+      "artifacts": [
+        {
+          "artifact": "API Response Baselines",
+          "description": "Capture all API endpoint responses for comparison",
+          "location": "tests/baselines/api-responses.json"
+        },
+        {
+          "artifact": "Database State Snapshots",
+          "description": "Known database states for testing",
+          "location": "tests/fixtures/database-states/"
+        },
+        {
+          "artifact": "User Journey Recordings",
+          "description": "E2E test recordings of current behavior",
+          "location": "tests/e2e/recordings/"
+        }
+      ]
+    },
+    "comparativeValidation": {
+      "description": "Compare post-migration behavior against baselines",
+      "methods": [
+        {
+          "method": "API Response Diffing",
+          "description": "Automated comparison of API responses",
+          "tolerance": "Zero functional differences allowed"
+        },
+        {
+          "method": "Workflow Comparison",
+          "description": "Side-by-side user workflow validation",
+          "approach": "Manual testing with baseline recordings"
+        }
+      ]
+    }
+  },
+  "validationSchedule": {
+    "phase1_foundation": {
+      "validationType": "Structural validation only",
+      "tests": [
+        "New packages build successfully",
+        "Type exports work correctly",
+        "No circular dependencies introduced",
+        "Existing functionality unaffected"
+      ],
+      "duration": "1 day",
+      "automation": "100%"
+    },
+    "phase2_businessLogic": {
+      "validationType": "Comprehensive business logic validation", 
+      "tests": [
+        "All extracted use cases have unit tests",
+        "Integration tests for use case delegation",
+        "Business rule preservation validation",
+        "Performance benchmarking"
+      ],
+      "duration": "3 days",
+      "automation": "80%"
+    },
+    "phase3_interfaceAdapters": {
+      "validationType": "API and presentation layer validation",
+      "tests": [
+        "All API endpoints function identically",
+        "Response formats unchanged",
+        "Error handling consistent",
+        "E2E workflow validation"
+      ],
+      "duration": "2 days", 
+      "automation": "85%"
+    },
+    "phase4_domainModels": {
+      "validationType": "Domain behavior validation",
+      "tests": [
+        "Rich entity behavior tests",
+        "Domain event validation",
+        "Business rule enforcement",
+        "Aggregate consistency"
+      ],
+      "duration": "1 day",
+      "automation": "90%"
+    }
+  },
+  "qualityGates": {
+    "phase1": [
+      "Build succeeds with zero errors",
+      "Type check passes with zero warnings",
+      "No circular dependencies detected",
+      "Existing test suite passes 100%"
+    ],
+    "phase2": [
+      "All use cases have 100% branch coverage",
+      "Integration tests pass for all extracted logic",
+      "Performance degradation <5%",
+      "Business logic validation by product team"
+    ],
+    "phase3": [
+      "All API endpoints return identical responses",
+      "E2E test suite passes 100%",
+      "Response time degradation <10%",
+      "Manual workflow validation complete"
+    ],
+    "phase4": [
+      "Domain model tests achieve 100% coverage",
+      "No regressions in existing functionality",
+      "Architecture review approval",
+      "Final stakeholder sign-off"
+    ]
+  },
+  "rollbackTriggers": [
+    {
+      "trigger": "Build Failures",
+      "description": "Any phase introduces build failures",
+      "action": "Immediate rollback to previous working state"
+    },
+    {
+      "trigger": "Performance Degradation >15%",
+      "description": "Significant performance impact detected",
+      "action": "Investigate root cause, rollback if unfixable within 1 day"
+    },
+    {
+      "trigger": "Business Logic Regression",
+      "description": "Any user workflow changes behavior",
+      "action": "Immediate rollback and root cause analysis"
+    },
+    {
+      "trigger": "Test Coverage Drop <90%",
+      "description": "Test coverage falls below acceptable threshold",
+      "action": "Block deployment until coverage restored"
+    }
+  ],
+  "validationTools": {
+    "automated": [
+      {
+        "tool": "Vitest",
+        "purpose": "Unit and integration testing",
+        "configuration": "vitest.config.ts with coverage reporting"
+      },
+      {
+        "tool": "Playwright", 
+        "purpose": "E2E testing and user workflow validation",
+        "configuration": "playwright.config.ts with baseline comparison"
+      },
+      {
+        "tool": "TypeScript",
+        "purpose": "Type safety validation",
+        "configuration": "Strict mode with comprehensive type checking"
+      },
+      {
+        "tool": "BiomeJS",
+        "purpose": "Code quality and style validation", 
+        "configuration": "biome.json with architectural rules"
+      }
+    ],
+    "manual": [
+      {
+        "tool": "Architecture Review Checklist",
+        "purpose": "Clean Architecture compliance validation",
+        "process": "Senior developer and architect review"
+      },
+      {
+        "tool": "Business Logic Validation Matrix",
+        "purpose": "Ensure all business rules preserved",
+        "process": "Product team validation against requirements"
+      },
+      {
+        "tool": "Performance Monitoring",
+        "purpose": "Real-world performance validation",
+        "process": "Monitoring dashboards and alerting"
+      }
+    ]
+  },
+  "reportingFramework": {
+    "dailyReports": {
+      "content": [
+        "Test execution summary",
+        "Quality gate status",
+        "Performance benchmarks",
+        "Identified issues and resolutions"
+      ],
+      "recipients": "Development team and technical lead"
+    },
+    "phaseCompletionReports": {
+      "content": [
+        "Comprehensive test results", 
+        "Architecture compliance validation",
+        "Performance impact analysis",
+        "Business stakeholder sign-off"
+      ],
+      "recipients": "Project stakeholders and management"
+    },
+    "finalValidationReport": {
+      "content": [
+        "Complete migration validation summary",
+        "Architecture compliance certification",
+        "Performance benchmarking results",
+        "Quality metrics achievement",
+        "Stakeholder approval documentation"
+      ],
+      "timeline": "Within 1 week of migration completion"
+    }
+  }
+}
