@@ -1,87 +1,48 @@
-# devnet Implementation Progress
+# devnet Implementation Progress (Refined Plan)
 
-## Phase 0: Infrastructure & Project Setup
+## Phase A — Engineering OS Foundation
 
-- [ ] **Step 1**: Repository Infrastructure Specification
-- [ ] **Step 2**: Monorepo Architecture Specification  
-- [ ] **Step 3**: Core Packages Architecture Specification
-- [ ] **Step 4**: Development Environment Specification
-- [ ] **Step 5**: Project Documentation Specification
+- [ ] **Step A1**: Workspace & Repo Validation
+- [ ] **Step A2**: Tooling & Automation Hardening
+- [ ] **Step A3**: Engineering OS Integration
 
-**Phase 0 Status**: ⏳ Not Started
+**Phase A Exit Criteria**: `pnpm verify:local` green, coverage threshold ≥98, env scaffolding documented, checkpoint updated.
 
-## Phase 1: Core Domain Layer (Next)
+## Phase B — Architecture Spine
 
-- [ ] **Step 1**: Domain Entities Implementation
-- [ ] **Step 2**: Value Objects Implementation
-- [ ] **Step 3**: Domain Services Implementation
-- [ ] **Step 4**: Domain Events Implementation
-- [ ] **Step 5**: Repository Interfaces Implementation
+- [ ] **Step B1**: Contracts Package Creation
+- [ ] **Step B2**: Core Shared Kernel
+- [ ] **Step B3**: Infrastructure Surface Definition
+- [ ] **Step B4**: Architecture Quality Gates
 
-**Coverage Target**: 100% (domain purity requirement)
+**Phase B Exit Criteria**: Contracts/core/infrastructure scaffolds complete, dependency rules enforced, `/execute-tasks` architecture run green.
 
-## Phase 2: Use Cases & Business Logic
+## Phase C — Domain Capability Waves
 
-- [ ] **Step 1**: Application Services Implementation
-- [ ] **Step 2**: Command Handlers Implementation
-- [ ] **Step 3**: Query Handlers Implementation
-- [ ] **Step 4**: Use Case Integration Tests
-- [ ] **Step 5**: Business Logic Validation
+- [ ] **Wave C1**: Authentication & Identity
+- [ ] **Wave C2**: Organizations & Collaboration
+- [ ] **Wave C3**: Billing & Payments
+- [ ] **Wave C4**: Platform Services & Shared Capabilities
 
-**Coverage Target**: 95%
+**Phase C Exit Criteria**: Domain modules at 100% coverage, in-memory adapters ready, clean architecture verification passes.
 
-## Phase 3: Infrastructure Layer
+## Phase D — Delivery Layers
 
-- [ ] **Step 1**: Database Integration (Drizzle ORM)
-- [ ] **Step 2**: Repository Implementations
-- [ ] **Step 3**: External Service Adapters
-- [ ] **Step 4**: Infrastructure Services
-- [ ] **Step 5**: Integration Testing
+- [ ] **Step D1**: API Delivery Alignment
+- [ ] **Step D2**: Frontend Feature-Sliced Migration
+- [ ] **Step D3**: Integrated Experience Testing
 
-**Coverage Target**: 95%
+**Phase D Exit Criteria**: Contract-backed API routes, FSD-compliant frontend, Playwright journeys green, CI integration coverage ≥95%.
 
-## Phase 4: Interface Adapters
+## Phase E — Production Hardening & Enablement
 
-- [ ] **Step 1**: HonoJS API Implementation
-- [ ] **Step 2**: Controllers & Routes
-- [ ] **Step 3**: Middleware & Validation
-- [ ] **Step 4**: API Documentation
-- [ ] **Step 5**: Contract Validation
+- [ ] **Step E1**: Observability & Reliability
+- [ ] **Step E2**: Security Hardening
+- [ ] **Step E3**: Deployment & Release Operations
+- [ ] **Step E4**: Documentation & Transition
 
-**Coverage Target**: 95%
-
-## Phase 5: Presentation Layer
-
-- [ ] **Step 1**: Next.js Application Setup
-- [ ] **Step 2**: Feature-Sliced Design Implementation
-- [ ] **Step 3**: UI Components & Styling
-- [ ] **Step 4**: State Management (TanStack Query + Zustand)
-- [ ] **Step 5**: E2E Testing with Playwright
-
-**Coverage Target**: 95%
-
-## Phase 6: Deployment & Launch
-
-- [ ] **Step 1**: Production Configuration
-- [ ] **Step 2**: CI/CD Pipeline Setup
-- [ ] **Step 3**: Database Migrations
-- [ ] **Step 4**: Monitoring & Observability
-- [ ] **Step 5**: Performance Optimization
-
-## Phase 7: Documentation & Optimization
-
-- [ ] **Step 1**: API Documentation Generation
-- [ ] **Step 2**: User Documentation
-- [ ] **Step 3**: Performance Analysis & Optimization
-- [ ] **Step 4**: Security Audit
-- [ ] **Step 5**: Launch Preparation
+**Phase E Exit Criteria**: Observability + security controls in place, deployment automation ready, documentation & runbooks finalized.
 
 ---
 
-**Overall Progress**: Phase 0 Not Started (0/5)  
-**Next Milestone**: Phase 0 - Step 1 (Repository Infrastructure)  
-**Architecture Compliance**: 10/10 target  
-**Coverage**: 98% overall target (100% domain, 95% other layers)
-
-Implementation Plan: devnet-plan/implementation-plan.md  
-Quick Restart: Continue devnet from devnet-plan/implementation-plan.md
+Progress template aligns with `freshstart/refined-plan/status.example.yaml`. Update checkboxes and notes after each `/execute-tasks` session.

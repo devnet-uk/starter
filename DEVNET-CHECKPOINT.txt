@@ -1,8 +1,8 @@
 LAST_COMPLETED: None
-NEXT_ACTION: Start Phase 0, Step 1 - Repository Infrastructure Specification
-CURRENT_FILE: devnet-plan/phases/phase-0-infrastructure.md
-WORKING_DIRECTORY: ~/Projects/devnet.clean_architecture/ (Engineering OS standards repo)
+NEXT_ACTION: Start Phase A, Step 1 — Workspace & Repo Validation
+CURRENT_FILE: freshstart/refined-plan/phases/phase-a-foundation.md
+WORKING_DIRECTORY: ~/Projects/devnet/ (primary implementation repo)
 STANDARDS_DIRECTORY: ~/Projects/devnet.clean_architecture/ (Engineering OS standards)
 GIT_TAG: none
-COVERAGE: Not started
-NOTE: Planning artefacts reset to Phase 0, Step 1.
+COVERAGE: Not started (target ≥98% repo default)
+NOTE: Switch to refined plan controls in freshstart/refined-plan/. Align status with status.example.yaml template.

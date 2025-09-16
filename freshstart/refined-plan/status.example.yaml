@@ -1,0 +1,27 @@
+# Status template aligned to the refined DevNet implementation plan (Phases A–E)
+# Copy to DEVNET-CHECKPOINT.txt / DEVNET-PROGRESS.md workflow as needed.
+
+project: devnet
+working_directory: ~/Projects/devnet
+
+phase:
+  id: phase-a
+  name: Engineering OS Foundation
+  status: not_started  # allowed: not_started, in_progress, blocked, complete
+  step: 1              # current step within the phase (see phase docs)
+
+verification:
+  last_run: null       # ISO timestamp of last `/execute-tasks` Step 6 run
+  blocking_failures: 0
+  commands:
+    - pnpm verify:local
+    - pnpm --filter @repo/core test -- --coverage
+
+notes:
+  - "Confirm environment variables from freshstart/refined-plan/ENV-VARS.md"
+  - "Use manifest freshstart/refined-plan/manifest.json for phase routing"
+
+history:
+  - date: 2025-09-10
+    event: "plan-import"
+    detail: "Initialized refined implementation plan controls"

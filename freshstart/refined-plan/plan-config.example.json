@@ -1,0 +1,16 @@
+{
+  "version": "0.2.0",
+  "paths": {
+    "DEVNET_HOME": "~/Projects/devnet",
+    "ENGINEERING_OS_HOME": "~/Projects/devnet.clean_architecture"
+  },
+  "ports": {
+    "DEVNET_PORT_API": 4000,
+    "DEVNET_PORT_WEB": 4001
+  },
+  "verification": {
+    "mode": "blocking",
+    "phases_manifest": "freshstart/refined-plan/manifest.json",
+    "status_template": "freshstart/refined-plan/status.example.yaml"
+  }
+}

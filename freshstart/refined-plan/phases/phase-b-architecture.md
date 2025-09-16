@@ -1,0 +1,129 @@
+# Phase B: Architecture Spine
+
+## Overview
+
+- Phase: Architecture Spine
+- Coverage Target: 100% for `packages/core` shared kernel and contracts unit coverage ≥95%
+- Status: Ready for execution after Phase A acceptance
+- Duration: 4 structured steps (contracts, core kernel, infrastructure adapters, quality gates)
+- Next Phase: Phase C — Domain Capability Waves
+
+## Prerequisites & Working Directory
+
+- Working directory: `~/Projects/devnet`
+- Ensure Phase A checkpoints marked complete in `DEVNET-CHECKPOINT.txt`
+
+## Phase Acceptance
+
+- `packages/contracts` published as source of truth (Zod schemas, DTOs, OpenAPI generation) with zero downstream dependencies
+- `packages/core` contains clean architecture primitives (Entity, ValueObject, DomainEvent, Result, Guard)
+- `packages/infrastructure` seeded with adapter interfaces + anti-corruption layers, but no concrete service logic yet
+- Dependency directions validated via `pnpm lint` (import lint rules) and architecture tests (e.g., dependency-cruiser or custom Biome rule)
+- Shared observability + error handling primitives defined and unit-tested
+- `/execute-tasks` run referencing architecture standards returns green
+
+## Standards & Intents
+
+- Architecture: `docs/standards/architecture/clean-architecture.md`, `integration-strategy.md`
+- API contracts: `docs/standards/development/api-contracts.md`
+- Testing: `docs/standards/development/testing-strategy.md`
+
+## Implementation Steps
+
+### Step B1: Contracts Package Creation
+
+```claude
+Claude: /create-spec "Contracts package bootstrap — zod schemas, HTTP contracts, OpenAPI automation. Pull requirements from features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md."
+Claude: /create-tasks
+Claude: /execute-tasks
+```
+
+**Deliverables**
+- `packages/contracts` with module barrels (api, domain, schemas)
+- Generated OpenAPI doc script (e.g., `pnpm --filter @repo/contracts build:openapi`)
+- Contract tests ensuring schema integrity
+- Feature inputs: `features/auth/specification.md`, `features/organizations/specification.md`, `features/payments/specification.md`, `features/api/specification.md`
+
+**Validation**
+- Follow verification guidance embedded in `docs/standards/development/api-contracts.md` (coverage ≥95%) via the `/execute-tasks` Step 6 verification runner.
+
+**Commit Point**
+```bash
+git add packages/contracts pnpm-workspace.yaml turbo.json
+git commit -m "feat(phase-b): contracts package established"
+```
+
+### Step B2: Core Shared Kernel
+
+```claude
+Claude: /create-spec "Core shared kernel — entities, value objects, domain events, result/guard utilities. Reference terminology across features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
+Claude: /create-tasks
+Claude: /execute-tasks
+```
+
+**Deliverables**
+- `packages/core/src/domain/shared` primitives with 100% unit coverage
+- Architectural docs capturing dependency inversion patterns
+- ESLint/Biome rules preventing framework imports in core
+- Feature inputs: shared glossary from `features/*/specification.md` (use entities and domain concepts to drive base abstractions)
+
+**Validation**
+- Enforce the 100% coverage and domain purity requirements defined in `docs/standards/architecture/clean-architecture.md` through the `/execute-tasks` verification blocks.
+
+**Commit Point**
+```bash
+git add packages/core docs/adr/*
+git commit -m "feat(phase-b): core shared kernel implemented"
+```
+
+### Step B3: Infrastructure Surface Definition
+
+```claude
+Claude: /create-spec "Infrastructure scaffolding — repository/service interfaces, anti-corruption layers, shared mapper strategy. Incorporate integration needs from features/storage/specification.md, features/email/specification.md, features/payments/specification.md, and features/api/specification.md."
+Claude: /create-tasks
+Claude: /execute-tasks
+```
+
+**Deliverables**
+- Interface definitions for persistence, cache, email, storage (no concrete logic yet)
+- Base mapper abstractions in `packages/infrastructure/src/shared`
+- Cross-cutting concerns (logging context, error translation) introduced
+- Feature inputs: integration requirements from `features/storage/specification.md`, `features/email/specification.md`, `features/payments/specification.md`, `features/api/specification.md`
+
+**Validation**
+- Use the infrastructure guidance in `docs/standards/architecture/integration-strategy.md`; the verification runner covers dependency-rule checks during `/execute-tasks`.
+
+**Commit Point**
+```bash
+git add packages/infrastructure
+git commit -m "feat(phase-b): infrastructure interfaces scaffolded"
+```
+
+### Step B4: Architecture Quality Gates
+
+```claude
+Claude: /create-spec "Architecture quality gates — dependency enforcement, openapi generation workflow, ci wiring. Ensure coverage for all domains listed in the Feature Mapping table of freshstart/refined-plan/implementation-plan.md."
+Claude: /create-tasks
+Claude: /execute-tasks
+```
+
+**Deliverables**
+- Architecture tests (dependency-cruiser/ts-auto-guard) ensuring layer boundaries
+- CI pipeline updates to run contracts build + tests
+- Updated `DEVNET-CHECKPOINT.txt` with Phase B exit summary + next phase pointer
+- Feature inputs: ensure contract generation covers all domains listed in `freshstart/refined-plan/implementation-plan.md` Feature Mapping table
+
+**Validation**
+- Apply the Clean Architecture and CI standards; `/execute-tasks` verification will cover dependency rules, OpenAPI generation, and CI gating.
+
+**Commit Point**
+```bash
+git add .github/workflows/ DEVNET-CHECKPOINT.txt DEVNET-PROGRESS.md
+git commit -m "chore(phase-b): architecture gates enforced"
+```
+
+## References
+
+- `freshstart/refined-plan/implementation-plan.md`
+- `freshstart/refined-plan/phases/phase-c-domain.md`
+- Feature specs: auth, organizations, payments (`features/*/specification.md`)

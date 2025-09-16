@@ -1,0 +1,36 @@
+{
+  "version": "0.2.0",
+  "description": "Refined plan manifest mapping Phase A–E documentation for Engineering OS agents.",
+  "phases": [
+    {
+      "id": "phase-a",
+      "name": "Engineering OS Foundation",
+      "path": "freshstart/refined-plan/phases/phase-a-foundation.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-b",
+      "name": "Architecture Spine",
+      "path": "freshstart/refined-plan/phases/phase-b-architecture.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-c",
+      "name": "Domain Capability Waves",
+      "path": "freshstart/refined-plan/phases/phase-c-domain.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-d",
+      "name": "Delivery Layers",
+      "path": "freshstart/refined-plan/phases/phase-d-delivery.md",
+      "summary_anchor": "overview"
+    },
+    {
+      "id": "phase-e",
+      "name": "Production Hardening & Enablement",
+      "path": "freshstart/refined-plan/phases/phase-e-hardening.md",
+      "summary_anchor": "overview"
+    }
+  ]
+}
