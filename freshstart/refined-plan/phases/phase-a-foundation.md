@@ -55,22 +55,23 @@ All bullets must be green in a single `/execute-tasks` session before moving to 
 
 ### Step A1: Workspace & Repo Validation
 
-<user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
-Otherwise, follow the manual steps above.
-</user-action-required>
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
+    echo "AUTOMATED" > .step-a1-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-a1-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 
 **Deliverables**
 - New git workspace bootstrapped at `${DEVNET_HOME:-~/Projects/devnet/}` (empty dir created, `git init`, remote configured via `git remote add origin ${DEVNET_GIT_REMOTE:-<github-url>}` when provided)
@@ -87,20 +88,23 @@ git commit -m "chore(phase-a): workspace baseline verified"
 ### Step A2: Tooling & Automation Hardening
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98"
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98"
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98"
+    echo "AUTOMATED" > .step-a2-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-a2-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Deliverables**
@@ -118,20 +122,23 @@ git commit -m "chore(phase-a): tooling automation hardened"
 ### Step A3: Engineering OS Integration
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Engineering OS integration — scripts wiring, standards routing, verification runner smoke test"
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Engineering OS integration — scripts wiring, standards routing, verification runner smoke test"
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Engineering OS integration — scripts wiring, standards routing, verification runner smoke test"
+    echo "AUTOMATED" > .step-a3-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-a3-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Engineering OS integration — scripts wiring, standards routing, verification runner smoke test\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Deliverables**

@@ -67,20 +67,23 @@ Each wave follows the EOS execution pattern: `/create-spec` (with explicit DSL r
 ### Wave C1: Authentication & Identity
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Authentication domain wave — implement entities, MFA policies, and contract mappers. Load requirements from features/auth/specification.md and features/users/specification.md."
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Authentication domain wave — implement entities, MFA policies, and contract mappers. Load requirements from features/auth/specification.md and features/users/specification.md."
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Authentication domain wave — implement entities, MFA policies, and contract mappers. Load requirements from features/auth/specification.md and features/users/specification.md."
+    echo "AUTOMATED" > .wave-c1-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .wave-c1-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Authentication domain wave — implement entities, MFA policies, and contract mappers. Load requirements from features/auth/specification.md and features/users/specification.md.\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Scope**
@@ -106,20 +109,23 @@ git commit -m "feat(phase-c): authentication domain wave complete"
 ### Wave C2: Organizations & Collaboration
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Organizations domain wave — RBAC policies, invitations, membership invariants. Use features/organizations/specification.md and features/users/specification.md as inputs."
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Organizations domain wave — RBAC policies, invitations, membership invariants. Use features/organizations/specification.md and features/users/specification.md as inputs."
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Organizations domain wave — RBAC policies, invitations, membership invariants. Use features/organizations/specification.md and features/users/specification.md as inputs."
+    echo "AUTOMATED" > .wave-c2-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .wave-c2-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Organizations domain wave — RBAC policies, invitations, membership invariants. Use features/organizations/specification.md and features/users/specification.md as inputs.\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Scope**
@@ -145,20 +151,23 @@ git commit -m "feat(phase-c): organization domain wave complete"
 ### Wave C3: Billing & Payments
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Billing domain wave — subscription lifecycle, provider abstraction, reconciliation. Pull data from features/payments/specification.md and features/api/specification.md."
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Billing domain wave — subscription lifecycle, provider abstraction, reconciliation. Pull data from features/payments/specification.md and features/api/specification.md."
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Billing domain wave — subscription lifecycle, provider abstraction, reconciliation. Pull data from features/payments/specification.md and features/api/specification.md."
+    echo "AUTOMATED" > .wave-c3-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .wave-c3-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Billing domain wave — subscription lifecycle, provider abstraction, reconciliation. Pull data from features/payments/specification.md and features/api/specification.md.\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Scope**
@@ -184,20 +193,23 @@ git commit -m "feat(phase-c): billing domain wave complete"
 ### Wave C4: Platform Services & Shared Capabilities
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Platform services domain wave — AI chat, storage, email, audit logging. Reference features/ui-components/specification.md, features/storage/specification.md, features/email/specification.md, and features/api/specification.md."
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Platform services domain wave — AI chat, storage, email, audit logging. Reference features/ui-components/specification.md, features/storage/specification.md, features/email/specification.md, and features/api/specification.md."
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Platform services domain wave — AI chat, storage, email, audit logging. Reference features/ui-components/specification.md, features/storage/specification.md, features/email/specification.md, and features/api/specification.md."
+    echo "AUTOMATED" > .wave-c4-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .wave-c4-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Platform services domain wave — AI chat, storage, email, audit logging. Reference features/ui-components/specification.md, features/storage/specification.md, features/email/specification.md, and features/api/specification.md.\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Scope**

@@ -65,20 +65,23 @@ fi
 ### Step E1: Observability & Reliability
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Observability foundation — structured logging, metrics, tracing, health checks"
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Observability foundation — structured logging, metrics, tracing, health checks"
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Observability foundation — structured logging, metrics, tracing, health checks"
+    echo "AUTOMATED" > .step-e1-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-e1-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Observability foundation — structured logging, metrics, tracing, health checks\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Deliverables**
@@ -96,20 +99,23 @@ git commit -m "feat(phase-e): observability foundation established"
 ### Step E2: Security Hardening
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Security hardening — threat model, dependency audit, secrets management validation"
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Security hardening — threat model, dependency audit, secrets management validation"
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Security hardening — threat model, dependency audit, secrets management validation"
+    echo "AUTOMATED" > .step-e2-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-e2-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Security hardening — threat model, dependency audit, secrets management validation\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Deliverables**
@@ -127,20 +133,23 @@ git commit -m "chore(phase-e): security hardening complete"
 ### Step E3: Deployment & Release Operations
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Deployment automation — staging/prod workflows, infra scripts, rollback procedures"
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Deployment automation — staging/prod workflows, infra scripts, rollback procedures"
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Deployment automation — staging/prod workflows, infra scripts, rollback procedures"
+    echo "AUTOMATED" > .step-e3-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-e3-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Deployment automation — staging/prod workflows, infra scripts, rollback procedures\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Deliverables**
@@ -158,20 +167,23 @@ git commit -m "chore(phase-e): deployment workflows automated"
 ### Step E4: Documentation & Transition
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Documentation & handoff — runbooks, onboarding guide, final checkpoint"
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Documentation & handoff — runbooks, onboarding guide, final checkpoint"
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Documentation & handoff — runbooks, onboarding guide, final checkpoint"
+    echo "AUTOMATED" > .step-e4-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-e4-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Documentation & handoff — runbooks, onboarding guide, final checkpoint\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Deliverables**

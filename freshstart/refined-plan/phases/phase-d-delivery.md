@@ -65,20 +65,23 @@ fi
 ### Step D1: API Delivery Alignment
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "API delivery — hono routes generated from contracts, validation middleware, integration tests. Reference features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md for endpoint coverage."
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "API delivery — hono routes generated from contracts, validation middleware, integration tests. Reference features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md for endpoint coverage."
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "API delivery — hono routes generated from contracts, validation middleware, integration tests. Reference features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md for endpoint coverage."
+    echo "AUTOMATED" > .step-d1-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-d1-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"API delivery — hono routes generated from contracts, validation middleware, integration tests. Reference features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md for endpoint coverage.\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Deliverables**
@@ -100,20 +103,23 @@ git commit -m "feat(phase-d): api delivery aligned to contracts"
 ### Step D2: Frontend Feature-Sliced Migration
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Frontend FSD migration — reorganize Next.js app, implement prioritized journeys. Incorporate requirements from features/ui-components/specification.md, features/auth/specification.md, and features/organizations/specification.md."
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Frontend FSD migration — reorganize Next.js app, implement prioritized journeys. Incorporate requirements from features/ui-components/specification.md, features/auth/specification.md, and features/organizations/specification.md."
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Frontend FSD migration — reorganize Next.js app, implement prioritized journeys. Incorporate requirements from features/ui-components/specification.md, features/auth/specification.md, and features/organizations/specification.md."
+    echo "AUTOMATED" > .step-d2-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-d2-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Frontend FSD migration — reorganize Next.js app, implement prioritized journeys. Incorporate requirements from features/ui-components/specification.md, features/auth/specification.md, and features/organizations/specification.md.\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Deliverables**
@@ -135,20 +141,23 @@ git commit -m "feat(phase-d): frontend migrated to feature-sliced design"
 ### Step D3: Integrated Experience Testing
 
 <user-action-required>
-⚠️ USER ACTION: Type the following commands directly into Claude Code:
-
-1. Copy and paste this command:
-   /create-spec "Integrated experience testing — playwright suites, contract ↔ client smoke checks, ci pipeline. Build journeys using features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
-
-2. After the spec is created, type:
-   /create-tasks
-
-3. Once tasks are generated, type:
-   /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "Integrated experience testing — playwright suites, contract ↔ client smoke checks, ci pipeline. Build journeys using features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
-Otherwise, follow the manual steps above.
+```bash
+if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
+    echo "🤖 Automated mode detected - executing via pnpm"
+    pnpm eos:run --spec "Integrated experience testing — playwright suites, contract ↔ client smoke checks, ci pipeline. Build journeys using features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
+    echo "AUTOMATED" > .step-d3-mode
+else
+    echo "👤 Manual mode - Claude commands required"
+    echo "MANUAL" > .step-d3-mode
+    echo ""
+    echo "════════════════════════════════════════════════════════════════"
+    echo "  Execute these Claude Code commands now:"
+    echo "  1. /create-spec \"Integrated experience testing — playwright suites, contract ↔ client smoke checks, ci pipeline. Build journeys using features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md.\""
+    echo "  2. /create-tasks"
+    echo "  3. /execute-tasks"
+    echo "════════════════════════════════════════════════════════════════"
+fi
+```
 </user-action-required>
 
 **Deliverables**
