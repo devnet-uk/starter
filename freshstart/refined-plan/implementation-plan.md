@@ -104,9 +104,12 @@ Verification uses EOS runner sequences:
 2. /create-tasks
 3. /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "<phase-specific description with DSL routing and variable bindings>"
+Otherwise, stick with the manual slash commands above.
 </user-action-required>
+
+Set `DEVNET_EOS_AUTOMATE=true` in your environment (see `freshstart/refined-plan/ENV-VARS.md`) when you want Claude to favor the CLI path by default.
 
 After Claude completes the EOS run, confirm locally via `pnpm verify:local` and targeted package commands per phase.
 

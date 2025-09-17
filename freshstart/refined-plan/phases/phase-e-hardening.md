@@ -76,8 +76,9 @@ fi
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Observability foundation — structured logging, metrics, tracing, health checks"
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Deliverables**
@@ -106,8 +107,9 @@ git commit -m "feat(phase-e): observability foundation established"
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Security hardening — threat model, dependency audit, secrets management validation"
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Deliverables**
@@ -136,8 +138,9 @@ git commit -m "chore(phase-e): security hardening complete"
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Deployment automation — staging/prod workflows, infra scripts, rollback procedures"
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Deliverables**
@@ -166,8 +169,9 @@ git commit -m "chore(phase-e): deployment workflows automated"
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Documentation & handoff — runbooks, onboarding guide, final checkpoint"
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Deliverables**

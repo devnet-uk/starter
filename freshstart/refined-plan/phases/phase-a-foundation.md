@@ -67,8 +67,9 @@ All bullets must be green in a single `/execute-tasks` session before moving to 
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Deliverables**
@@ -97,8 +98,9 @@ git commit -m "chore(phase-a): workspace baseline verified"
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98"
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Deliverables**
@@ -127,8 +129,9 @@ git commit -m "chore(phase-a): tooling automation hardened"
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Engineering OS integration — scripts wiring, standards routing, verification runner smoke test"
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Deliverables**

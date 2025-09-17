@@ -15,11 +15,12 @@
 - Automation must respect rate limits and wait for each command’s completion before continuing.
 - Need to record EOS outcomes back into `DEVNET-CHECKPOINT.txt` or similar tracking files.
 - Solution should be optional (manual path remains valid).
+- Toggle default behavior with the `DEVNET_EOS_AUTOMATE` environment variable (`true` means run the CLI automatically; anything else keeps manual prompts).
 
 ## Options
 
 ### Option 1 — Single-Run CLI Wrapper
-- Implemented in this repo as `pnpm eos:run --spec "Contracts package bootstrap — zod schemas..."` (see `scripts/eos-run.mjs`).
+- Implemented in this repo as `pnpm eos:run --spec "Contracts package bootstrap — zod schemas..."` (see `scripts/eos-run.mjs`). The plan instructs agents to check `DEVNET_EOS_AUTOMATE` to decide between this command and manual slash entries.
 - Script behaviour:
   1. Send `/create-spec "<spec>"` to Claude.
   2. Wait for completion (stream or poll message status).

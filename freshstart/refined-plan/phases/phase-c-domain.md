@@ -78,8 +78,9 @@ Each wave follows the EOS execution pattern: `/create-spec` (with explicit DSL r
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Authentication domain wave — implement entities, MFA policies, and contract mappers. Load requirements from features/auth/specification.md and features/users/specification.md."
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Scope**
@@ -116,8 +117,9 @@ git commit -m "feat(phase-c): authentication domain wave complete"
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Organizations domain wave — RBAC policies, invitations, membership invariants. Use features/organizations/specification.md and features/users/specification.md as inputs."
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Scope**
@@ -154,8 +156,9 @@ git commit -m "feat(phase-c): organization domain wave complete"
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Billing domain wave — subscription lifecycle, provider abstraction, reconciliation. Pull data from features/payments/specification.md and features/api/specification.md."
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Scope**
@@ -192,8 +195,9 @@ git commit -m "feat(phase-c): billing domain wave complete"
 3. Once tasks are generated, type:
    /execute-tasks
 
-Or run the automation command:
+If `DEVNET_EOS_AUTOMATE` is `true`, run:
    pnpm eos:run --spec "Platform services domain wave — AI chat, storage, email, audit logging. Reference features/ui-components/specification.md, features/storage/specification.md, features/email/specification.md, and features/api/specification.md."
+Otherwise, follow the manual steps above.
 </user-action-required>
 
 **Scope**
