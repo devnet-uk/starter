@@ -6,6 +6,7 @@ These variables mirror the controls defined in `devnet-plan/ENV-VARS.md` and rem
 - `ENGINEERING_OS_HOME` — absolute path to the standards reference repository (default: `~/Projects/devnet.starter`).
 - `DEVNET_PORT_API` — local API port (default `4000`).
 - `DEVNET_PORT_WEB` — local web port (default `4001`).
+- `DEVNET_GIT_REMOTE` — canonical GitHub remote URL for the implementation repo (example: `git@github.com:your-org/devnet.git`). Keep this in sync with `origin` when bootstrapping.
 - `VERIFICATION_MODE` — `blocking` (default) or `advisory`; affects `/execute-tasks` runner behavior.
 
 Tip: Keep the JSON sample in `freshstart/refined-plan/plan-config.example.json` synchronized with these defaults so agents can resolve paths/ports automatically.

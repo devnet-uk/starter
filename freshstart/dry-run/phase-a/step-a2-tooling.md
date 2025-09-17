@@ -25,9 +25,10 @@
 
 1. `Claude: /create-spec "Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98"`
    - Standards navigation: `typescript-config.md`, `biome-config.md`, `local-quality.md`, `testing-strategy.md`.
-   - Variables: `PROJECT_PHASE=phase-a`, `PROJECT_COVERAGE=98`, `PACKAGE_MANAGER=pnpm`.
+   - Variables: `PROJECT_PHASE=phase-a`, `PROJECT_COVERAGE=98`, `PACKAGE_MANAGER=pnpm`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+    - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
     - Diff/update `tsconfig.base.json` for strict mode, project references, path aliases.
     - Ensure `biome.json` contains strict lint + format settings.
     - Configure Husky hooks (`.husky/pre-commit`, `.husky/commit-msg`) invoking repo lint/check scripts.

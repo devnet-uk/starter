@@ -24,9 +24,10 @@
 
 1. `Claude: /create-spec "Core shared kernel — entities, value objects, domain events, result/guard utilities. Reference terminology across features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."`
    - Standards navigation: `architecture/clean-architecture.md`, `architecture/domain-verification.md`, `development/testing-strategy.md`.
-   - Variables: `PROJECT_PHASE=phase-b`, `CORE_COVERAGE=100`, `PROJECT_NAME=devnet`.
+   - Variables: `PROJECT_PHASE=phase-b`, `CORE_COVERAGE=100`, `PROJECT_NAME=devnet`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Implement base classes (`Entity`, `AggregateRoot`, `ValueObject`, `Result`, `Guard`, `DomainEvent`).
      - Add supporting utilities (UniqueId, DateTime wrappers, error codes).
      - Write comprehensive unit tests achieving 100% coverage.

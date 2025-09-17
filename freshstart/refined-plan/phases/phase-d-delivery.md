@@ -8,8 +8,40 @@
 - Duration: 3 macro-steps (API delivery, Frontend FSD migration, Integrated experience tests)
 - Next Phase: Phase E — Production Hardening & Enablement
 
-## Prerequisites
+## Prerequisites & Working Directory
 
+**Required Workspaces**:
+- Primary: `${DEVNET_HOME:-~/Projects/devnet/}`
+- Secondary (reference): `${ENGINEERING_OS_HOME:-~/Projects/devnet.starter/}`
+
+**Workspace Guard**
+```bash
+DEVNET_PATH="${DEVNET_HOME:-$HOME/Projects/devnet}"
+REMOTE_EXPECTED="${DEVNET_GIT_REMOTE:-}"
+ORIGIN_URL=""
+if [ -d "$DEVNET_PATH/.git" ]; then
+  ORIGIN_URL="$(cd "$DEVNET_PATH" && git config --get remote.origin.url 2>/dev/null)"
+fi
+if [ ! -d "$DEVNET_PATH/.git" ]; then
+  echo "❌ $DEVNET_PATH is not initialized — complete prior phases before Phase D"
+elif [ -n "$REMOTE_EXPECTED" ] && [ "$ORIGIN_URL" != "$REMOTE_EXPECTED" ]; then
+  echo "❌ origin remote mismatch — set via: git -C $DEVNET_PATH remote set-url origin $REMOTE_EXPECTED"
+else
+  echo "✅ Workspace ready at $DEVNET_PATH"
+fi
+```
+
+**Quick Workspace Check**
+```bash
+DEVNET_PATH="${DEVNET_HOME:-$HOME/Projects/devnet}"
+if [ "$(pwd)" = "$(cd "$DEVNET_PATH" && pwd 2>/dev/null)" ]; then
+  echo "✅"
+else
+  echo "❌ cd $DEVNET_PATH"
+fi
+```
+
+**Phase Dependencies**
 - Domain use cases and contracts from Phase C complete and stable
 - In-memory adapters available for API scaffolding
 - Frontend team briefed on Feature-Sliced Design (FSD) standards

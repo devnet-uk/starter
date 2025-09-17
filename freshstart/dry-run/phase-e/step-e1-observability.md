@@ -25,9 +25,10 @@
 
 1. `Claude: /create-spec "Observability foundation — structured logging, metrics, tracing, health checks"`
    - Standards navigation: `docs/standards/operations/observability.md`, `security/appsec.md` (logging guidance), relevant feature specs for metrics.
-   - Variables: `PROJECT_PHASE=phase-e`, `OBSERVABILITY_STACK=open-telemetry` (example), `SLO_TARGETS_ENABLED=true`.
+   - Variables: `PROJECT_PHASE=phase-e`, `OBSERVABILITY_STACK=open-telemetry` (example), `SLO_TARGETS_ENABLED=true`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Implement structured logging adapters with correlation IDs across API/infrastructure layers.
      - Instrument metrics for key flows; expose Prometheus or equivalent endpoints.
      - Integrate distributed tracing (OpenTelemetry) into request lifecycle.

@@ -24,9 +24,10 @@
 
 1. `Claude: /create-spec "Contracts package bootstrap — zod schemas, HTTP contracts, OpenAPI automation. Pull requirements from features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md."`
    - Standards navigation: `docs/standards/development/api-contracts.md`, `architecture/integration-strategy.md`, `testing-strategy.md`.
-   - Variables: `PACKAGE_NAME=@repo/contracts`, `PROJECT_PHASE=phase-b`, `PROJECT_COVERAGE=95` for contracts.
+   - Variables: `PACKAGE_NAME=@repo/contracts`, `PROJECT_PHASE=phase-b`, `PROJECT_COVERAGE=95`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (compare `pwd` vs. ``${DEVNET_HOME}``, confirm `git config --get remote.origin.url` matches ``${DEVNET_GIT_REMOTE}``).
      - Scaffold `packages/contracts` with subdirectories (`api`, `domain`, `schemas`) and barrel exports.
      - Implement Zod schemas derived from feature specs; ensure shared types exported.
      - Configure OpenAPI generation script (`pnpm --filter @repo/contracts build:openapi`).

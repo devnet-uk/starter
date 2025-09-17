@@ -11,12 +11,28 @@
 ## Prerequisites & Working Directory
 
 **Required Workspaces**:
-- Primary: `~/Projects/devnet/`
-- Secondary: `~/Projects/devnet.starter/`
+- Primary: `~/Projects/devnet/` (new implementation repo)
+- Secondary: `~/Projects/devnet.starter/` (starter reference)
+
+**Bootstrap Guard**
+```bash
+DEVNET_PATH="${DEVNET_HOME:-$HOME/Projects/devnet}"
+if [ -d "$DEVNET_PATH" ] && [ "$(ls -A "$DEVNET_PATH")" ]; then
+  echo "❌ $DEVNET_PATH is not empty — clear it or choose a fresh directory"
+else
+  mkdir -p "$DEVNET_PATH"
+  echo "✅ Implementation workspace ready at $DEVNET_PATH"
+fi
+```
 
 **Quick Workspace Check**
 ```bash
-[[ $(basename $(pwd)) == "devnet" ]] && echo "✅" || echo "❌ cd ~/Projects/devnet"
+DEVNET_PATH="${DEVNET_HOME:-$HOME/Projects/devnet}"
+if [ "$(pwd)" = "$(cd "$DEVNET_PATH" && pwd 2>/dev/null)" ]; then
+  echo "✅"
+else
+  echo "❌ cd $DEVNET_PATH"
+fi
 ```
 
 ## Phase Acceptance
@@ -40,12 +56,13 @@ All bullets must be green in a single `/execute-tasks` session before moving to 
 ### Step A1: Workspace & Repo Validation
 
 ```claude
-Claude: /create-spec "DevNet workspace preflight — verify repo cleanliness, pnpm/turbo alignment, env scaffolding"
+Claude: /create-spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
 Claude: /create-tasks
 Claude: /execute-tasks
 ```
 
 **Deliverables**
+- New git workspace bootstrapped at `${DEVNET_HOME:-~/Projects/devnet/}` (empty dir created, `git init`, remote configured via `git remote add origin ${DEVNET_GIT_REMOTE:-<github-url>}` when provided)
 - Verified workspace status logged in `DEVNET-CHECKPOINT.txt`
 - `.nvmrc`, `.npmrc` (if required), `pnpm-workspace.yaml`, and `turbo.json` regenerated or confirmed
 - `.env.example` refreshed with documented variables; link to `devnet-plan/ENV-VARS.md`

@@ -25,9 +25,10 @@
 
 1. `Claude: /create-spec "Engineering OS integration — scripts wiring, standards routing, verification runner smoke test"`
    - Standards navigation: `docs/EngineeringOS/dsl/includes/common-snippets.md`, `docs/standards/standards.md`, any DSL integration standards.
-   - Variables: `VERIFICATION_MODE=blocking`, `PROJECT_PHASE=phase-a`, manifest path `freshstart/refined-plan/manifest.json`.
+   - Variables: `VERIFICATION_MODE=blocking`, `PROJECT_PHASE=phase-a`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`, manifest path `freshstart/refined-plan/manifest.json`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+    - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
     - Update scripts (e.g., `verification-shim.mjs`, `lint-governance.mjs`, `validate-standards.mjs`) to consume refined plan config/manifest if needed.
     - Wire dispatcher references in `DEVNET-CHECKPOINT.txt`, ensuring new manifest path recorded.
     - Confirm `/execute-tasks` Step 6 will exercise the verification shim against the refined manifest.

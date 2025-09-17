@@ -25,9 +25,10 @@
 
 1. `Claude: /create-spec "Security hardening — threat model, dependency audit, secrets management validation"`
    - Standards navigation: `docs/standards/security/appsec.md`, `threat-modeling.md`, `secrets-management.md`, `operations/deployment.md`.
-   - Variables: `PROJECT_PHASE=phase-e`, `SECURITY_REVIEW=true`.
+   - Variables: `PROJECT_PHASE=phase-e`, `SECURITY_REVIEW=true`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Produce updated threat model document covering critical flows (auth, billing, AI, storage).
      - Configure automated dependency scanning in CI (e.g., `pnpm audit --prod`, Snyk GitHub Action).
      - Validate secrets management approach; update `.env.example` and docs accordingly.

@@ -25,9 +25,10 @@
 
 1. `Claude: /create-spec "Deployment automation — staging/prod workflows, infra scripts, rollback procedures"`
    - Standards navigation: `docs/standards/operations/deployment.md`, `operations/release-readiness.md`, `security/secrets-management.md` (for deploy secrets).
-   - Variables: `PROJECT_PHASE=phase-e`, `DEPLOY_TARGETS=staging,production`.
+   - Variables: `PROJECT_PHASE=phase-e`, `DEPLOY_TARGETS=staging,production`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Define Turbo tasks + scripts for build/deploy flows.
      - Create or update infrastructure-as-code scripts (Terraform/Pulumi) or placeholders.
      - Configure CI/CD pipelines for staging/production promotion with smoke tests.

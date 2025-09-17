@@ -24,9 +24,10 @@
 
 1. `Claude: /create-spec "Platform services domain wave — AI chat, storage, email, audit logging. Reference features/ui-components/specification.md, features/storage/specification.md, features/email/specification.md, and features/api/specification.md."`
    - Standards navigation: `features/ui-components/specification.md`, `features/storage/specification.md`, `features/email/specification.md`, `features/api/specification.md`, `architecture/clean-architecture.md`.
-   - Variables: `DOMAIN_WAVE=platform`, `PROJECT_PHASE=phase-c`, `COVERAGE=100`.
+   - Variables: `DOMAIN_WAVE=platform`, `PROJECT_PHASE=phase-c`, `COVERAGE=100`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Implement domain abstractions for AI sessions, storage objects, email notifications, audit logs.
      - Create cross-cutting value objects (tenant IDs, resource IDs, quota guards).
      - Define use cases for conversation lifecycle, file handling, email dispatch scheduling, audit logging.

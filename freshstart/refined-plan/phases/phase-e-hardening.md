@@ -7,8 +7,40 @@
 - Status: Final phase following Phase D acceptance
 - Duration: 4 steps (observability, security, deployment, documentation & transition)
 
-## Prerequisites
+## Prerequisites & Working Directory
 
+**Required Workspaces**:
+- Primary: `${DEVNET_HOME:-~/Projects/devnet/}`
+- Secondary (reference): `${ENGINEERING_OS_HOME:-~/Projects/devnet.starter/}`
+
+**Workspace Guard**
+```bash
+DEVNET_PATH="${DEVNET_HOME:-$HOME/Projects/devnet}"
+REMOTE_EXPECTED="${DEVNET_GIT_REMOTE:-}"
+ORIGIN_URL=""
+if [ -d "$DEVNET_PATH/.git" ]; then
+  ORIGIN_URL="$(cd "$DEVNET_PATH" && git config --get remote.origin.url 2>/dev/null)"
+fi
+if [ ! -d "$DEVNET_PATH/.git" ]; then
+  echo "❌ $DEVNET_PATH is not initialized — complete earlier phases before Phase E"
+elif [ -n "$REMOTE_EXPECTED" ] && [ "$ORIGIN_URL" != "$REMOTE_EXPECTED" ]; then
+  echo "❌ origin remote mismatch — set via: git -C $DEVNET_PATH remote set-url origin $REMOTE_EXPECTED"
+else
+  echo "✅ Workspace ready at $DEVNET_PATH"
+fi
+```
+
+**Quick Workspace Check**
+```bash
+DEVNET_PATH="${DEVNET_HOME:-$HOME/Projects/devnet}"
+if [ "$(pwd)" = "$(cd "$DEVNET_PATH" && pwd 2>/dev/null)" ]; then
+  echo "✅"
+else
+  echo "❌ cd $DEVNET_PATH"
+fi
+```
+
+**Phase Dependencies**
 - API + frontend integration stable with green CI
 - Domain and infrastructure layers feature-complete
 - Operations stakeholders identified for handoff

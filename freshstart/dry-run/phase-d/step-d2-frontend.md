@@ -25,9 +25,10 @@
 
 1. `Claude: /create-spec "Frontend FSD migration — reorganize Next.js app, implement prioritized journeys. Incorporate requirements from features/ui-components/specification.md, features/auth/specification.md, and features/organizations/specification.md."`
    - Standards navigation: `docs/standards/frontend/feature-sliced-design.md`, `frontend/nextjs.md`, relevant feature specs (`features/ui-components`, `auth`, `organizations`).
-   - Variables: `PROJECT_PHASE=phase-d`, `FSD_ENFORCED=true`.
+   - Variables: `PROJECT_PHASE=phase-d`, `FSD_ENFORCED=true`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Restructure `apps/web/src` into FSD layers (shared/entities/features/pages/processes/app).
      - Update `tsconfig.json` paths for absolute imports; adjust linting rules.
      - Implement prioritized journeys aligning to specs.

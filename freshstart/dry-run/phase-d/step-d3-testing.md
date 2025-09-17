@@ -25,9 +25,10 @@
 
 1. `Claude: /create-spec "Integrated experience testing — playwright suites, contract ↔ client smoke checks, ci pipeline. Build journeys using features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."`
    - Standards navigation: `docs/standards/testing/e2e.md`, `frontend/feature-sliced-design.md` (testing guidance), `operations/deployment.md` (CI hints).
-   - Variables: `PROJECT_PHASE=phase-d`, `E2E_TOOL=playwright`.
+   - Variables: `PROJECT_PHASE=phase-d`, `E2E_TOOL=playwright`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Author Playwright suites for authentication onboarding, organization management, billing checkout, AI chat baseline.
      - Build test data seeding/teardown utilities referencing in-memory adapters.
      - Update Turbo pipeline and GitHub Actions to run e2e tests with caching/artifacts.

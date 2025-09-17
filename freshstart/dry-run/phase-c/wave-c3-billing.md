@@ -24,9 +24,10 @@
 
 1. `Claude: /create-spec "Billing domain wave — subscription lifecycle, provider abstraction, reconciliation. Pull data from features/payments/specification.md and features/api/specification.md."`
    - Standards navigation: `features/payments/specification.md`, `features/api/specification.md`, `architecture/clean-architecture.md`, `testing-strategy.md`.
-   - Variables: `DOMAIN_WAVE=billing`, `PROJECT_PHASE=phase-c`, `COVERAGE=100`.
+   - Variables: `DOMAIN_WAVE=billing`, `PROJECT_PHASE=phase-c`, `COVERAGE=100`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Implement billing entities (Subscription, Invoice, PaymentMethod, UsageRecord).
      - Create use cases for plan upgrades/downgrades, seat adjustments, webhook normalization.
      - Add provider-agnostic interfaces and event handlers for payment notifications.

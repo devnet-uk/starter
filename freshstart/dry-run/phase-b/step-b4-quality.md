@@ -24,9 +24,10 @@
 
 1. `Claude: /create-spec "Architecture quality gates — dependency enforcement, openapi generation workflow, ci wiring. Ensure coverage for all domains listed in the Feature Mapping table of freshstart/refined-plan/implementation-plan.md."`
    - Standards navigation: `architecture/clean-architecture.md`, `development/monorepo-setup.md` (for scripts), `testing-strategy.md`, CI standards under `docs/standards/operations/`.
-   - Variables: `PROJECT_PHASE=phase-b`, `ARCH_DEP_RULE=enabled`.
+   - Variables: `PROJECT_PHASE=phase-b`, `ARCH_DEP_RULE=enabled`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Configure dependency enforcement (dependency-cruiser config or Biome rule) verifying layer isolation.
      - Ensure OpenAPI generation integrated into CI workflow (update `.github/workflows/*`).
      - Add CI steps for contracts/core/infrastructure tests.

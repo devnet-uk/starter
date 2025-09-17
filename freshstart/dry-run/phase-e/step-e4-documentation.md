@@ -25,9 +25,10 @@
 
 1. `Claude: /create-spec "Documentation & handoff — runbooks, onboarding guide, final checkpoint"`
    - Standards navigation: `docs/standards/product/documentation.md`, `operations/runbooks.md`, `development/git-workflow.md` (final tagging guidance).
-   - Variables: `PROJECT_PHASE=phase-e`, `HANDOFF_READY=true`.
+   - Variables: `PROJECT_PHASE=phase-e`, `HANDOFF_READY=true`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Update `DEVNET-CHECKPOINT.txt` with final metrics, risks, completion summary; mark `DEVNET-PROGRESS.md` as complete.
      - Produce runbooks (support, incident response, domain operations) in `docs/runbooks/`.
      - Finalize ADR log (statuses, links to implementation).

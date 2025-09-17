@@ -25,9 +25,10 @@
 
 1. `Claude: /create-spec "API delivery — hono routes generated from contracts, validation middleware, integration tests. Reference features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md for endpoint coverage."`
    - Standards navigation: `docs/standards/backend/hono.md`, `development/api-contracts.md`, `security/appsec.md`, `testing-strategy.md`.
-   - Variables: `PROJECT_PHASE=phase-d`, `API_LAYER=hono`, `CONTRACT_SOURCE=packages/contracts`.
+   - Variables: `PROJECT_PHASE=phase-d`, `API_LAYER=hono`, `CONTRACT_SOURCE=packages/contracts`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Generate or implement Hono route handlers per bounded context using contract schemas.
      - Configure middleware stack (auth, RBAC, rate limiting, tenant context).
      - Implement contract drift check (script comparing contracts vs runtime schemas) integrated into CI.

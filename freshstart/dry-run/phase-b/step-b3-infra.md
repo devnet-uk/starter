@@ -24,9 +24,10 @@
 
 1. `Claude: /create-spec "Infrastructure scaffolding — repository/service interfaces, anti-corruption layers, shared mapper strategy. Incorporate integration needs from features/storage/specification.md, features/email/specification.md, features/payments/specification.md, and features/api/specification.md."`
    - Standards navigation: `architecture/integration-strategy.md`, `development/testing-strategy.md`, `security/appsec.md` (for interface contracts).
-   - Variables: `PROJECT_PHASE=phase-b`, `INFRA_SCOPE=interfaces-only`.
+   - Variables: `PROJECT_PHASE=phase-b`, `INFRA_SCOPE=interfaces-only`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` resolves to ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Define interfaces for persistence repositories, cache provider, email, storage, external APIs (no implementations).
      - Create mapper patterns to translate between contracts/Core and infrastructure DTOs.
      - Add shared error handling/logging context primitives.

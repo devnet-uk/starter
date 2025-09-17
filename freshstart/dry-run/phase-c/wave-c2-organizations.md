@@ -24,9 +24,10 @@
 
 1. `Claude: /create-spec "Organization domain wave — RBAC, invitations, membership invariants. Use features/organizations/specification.md and features/users/specification.md as inputs."`
    - Standards navigation: `features/organizations/specification.md`, `features/users/specification.md`, `architecture/clean-architecture.md`, `testing-strategy.md`.
-   - Variables: `DOMAIN_WAVE=organizations`, `PROJECT_PHASE=phase-c`, `COVERAGE=100`.
+   - Variables: `DOMAIN_WAVE=organizations`, `PROJECT_PHASE=phase-c`, `COVERAGE=100`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Model Organization, Member, Invitation aggregates with invariants.
      - Implement use cases for creation, invitation, acceptance, role assignment, context switching.
      - Define RBAC policy service referencing contract roles.

@@ -24,9 +24,10 @@
 
 1. `Claude: /create-spec "Authentication domain wave — entities, MFA policies, contract mappers. Load requirements from features/auth/specification.md and features/users/specification.md."`
    - Standards navigation: `architecture/clean-architecture.md`, `architecture/domain-verification.md`, `features/auth/specification.md`, `features/users/specification.md`, `testing-strategy.md`.
-   - Variables: `PROJECT_PHASE=phase-c`, `DOMAIN_WAVE=authentication`, `COVERAGE=100`.
+   - Variables: `PROJECT_PHASE=phase-c`, `DOMAIN_WAVE=authentication`, `COVERAGE=100`, `DEVNET_HOME=${DEVNET_HOME:-~/Projects/devnet}`, `DEVNET_GIT_REMOTE=${DEVNET_GIT_REMOTE:-git@github.com:your-org/devnet.git}`.
 2. `Claude: /create-tasks`
    - Expected tasks:
+     - Run workspace guard (ensure `pwd` equals ``${DEVNET_HOME}`` and origin matches ``${DEVNET_GIT_REMOTE}``).
      - Implement entities and aggregates for User, Session, Credential, MFA Device within `packages/core`.
      - Define use cases (sign-up, sign-in, passkey enrollment, password reset, session rotation) with interface-driven dependencies.
      - Emit domain events for authentication flows.
