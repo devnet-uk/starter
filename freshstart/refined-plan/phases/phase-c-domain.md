@@ -66,11 +66,18 @@ Each wave follows the EOS execution pattern: `/create-spec` (with explicit DSL r
 
 ### Wave C1: Authentication & Identity
 
-```claude
-Claude: /create-spec "Authentication domain wave — implement entities, MFA policies, and contract mappers. Load requirements from features/auth/specification.md and features/users/specification.md."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Authentication domain wave — implement entities, MFA policies, and contract mappers. Load requirements from features/auth/specification.md and features/users/specification.md."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Scope**
 - Entities: User, Session, Credential, MFA Device
@@ -94,11 +101,18 @@ git commit -m "feat(phase-c): authentication domain wave complete"
 
 ### Wave C2: Organizations & Collaboration
 
-```claude
-Claude: /create-spec "Organizations domain wave — RBAC policies, invitations, membership invariants. Use features/organizations/specification.md and features/users/specification.md as inputs."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Organizations domain wave — RBAC policies, invitations, membership invariants. Use features/organizations/specification.md and features/users/specification.md as inputs."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Scope**
 - Entities: Organization, Member, Invitation, Role
@@ -122,11 +136,18 @@ git commit -m "feat(phase-c): organization domain wave complete"
 
 ### Wave C3: Billing & Payments
 
-```claude
-Claude: /create-spec "Billing domain wave — subscription lifecycle, provider abstraction, reconciliation. Pull data from features/payments/specification.md and features/api/specification.md."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Billing domain wave — subscription lifecycle, provider abstraction, reconciliation. Pull data from features/payments/specification.md and features/api/specification.md."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Scope**
 - Entities: Subscription, Invoice, PaymentMethod, UsageRecord
@@ -150,11 +171,18 @@ git commit -m "feat(phase-c): billing domain wave complete"
 
 ### Wave C4: Platform Services & Shared Capabilities
 
-```claude
-Claude: /create-spec "Platform services domain wave — AI chat, storage, email, audit logging. Reference features/ui-components/specification.md, features/storage/specification.md, features/email/specification.md, and features/api/specification.md."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Platform services domain wave — AI chat, storage, email, audit logging. Reference features/ui-components/specification.md, features/storage/specification.md, features/email/specification.md, and features/api/specification.md."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Scope**
 - Entities/VOs: AI Chat Session, StorageObject, EmailNotification, AuditLogEntry

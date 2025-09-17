@@ -64,11 +64,18 @@ fi
 
 ### Step D1: API Delivery Alignment
 
-```claude
-Claude: /create-spec "API delivery — hono routes generated from contracts, validation middleware, integration tests. Reference features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md for endpoint coverage."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "API delivery — hono routes generated from contracts, validation middleware, integration tests. Reference features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md for endpoint coverage."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - Route files grouped by bounded context (auth, organizations, billing, platform)
@@ -88,11 +95,18 @@ git commit -m "feat(phase-d): api delivery aligned to contracts"
 
 ### Step D2: Frontend Feature-Sliced Migration
 
-```claude
-Claude: /create-spec "Frontend FSD migration — reorganize Next.js app, implement prioritized journeys. Incorporate requirements from features/ui-components/specification.md, features/auth/specification.md, and features/organizations/specification.md."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Frontend FSD migration — reorganize Next.js app, implement prioritized journeys. Incorporate requirements from features/ui-components/specification.md, features/auth/specification.md, and features/organizations/specification.md."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - `apps/web/src` reorganized into FSD layers with barrel exports + absolute imports via `tsconfig.json`
@@ -112,11 +126,18 @@ git commit -m "feat(phase-d): frontend migrated to feature-sliced design"
 
 ### Step D3: Integrated Experience Testing
 
-```claude
-Claude: /create-spec "Integrated experience testing — playwright suites, contract ↔ client smoke checks, ci pipeline. Build journeys using features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Integrated experience testing — playwright suites, contract ↔ client smoke checks, ci pipeline. Build journeys using features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - Playwright specs under `apps/web/tests/` for four core journeys

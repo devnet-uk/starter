@@ -62,11 +62,18 @@ Ensure Phase A checkpoints marked complete in `DEVNET-CHECKPOINT.txt` before sta
 
 ### Step B1: Contracts Package Creation
 
-```claude
-Claude: /create-spec "Contracts package bootstrap — zod schemas, HTTP contracts, OpenAPI automation. Pull requirements from features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Contracts package bootstrap — zod schemas, HTTP contracts, OpenAPI automation. Pull requirements from features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - `packages/contracts` with module barrels (api, domain, schemas)
@@ -85,11 +92,18 @@ git commit -m "feat(phase-b): contracts package established"
 
 ### Step B2: Core Shared Kernel
 
-```claude
-Claude: /create-spec "Core shared kernel — entities, value objects, domain events, result/guard utilities. Reference terminology across features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Core shared kernel — entities, value objects, domain events, result/guard utilities. Reference terminology across features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - `packages/core/src/domain/shared` primitives with 100% unit coverage
@@ -108,11 +122,18 @@ git commit -m "feat(phase-b): core shared kernel implemented"
 
 ### Step B3: Infrastructure Surface Definition
 
-```claude
-Claude: /create-spec "Infrastructure scaffolding — repository/service interfaces, anti-corruption layers, shared mapper strategy. Incorporate integration needs from features/storage/specification.md, features/email/specification.md, features/payments/specification.md, and features/api/specification.md."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Infrastructure scaffolding — repository/service interfaces, anti-corruption layers, shared mapper strategy. Incorporate integration needs from features/storage/specification.md, features/email/specification.md, features/payments/specification.md, and features/api/specification.md."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - Interface definitions for persistence, cache, email, storage (no concrete logic yet)
@@ -131,11 +152,18 @@ git commit -m "feat(phase-b): infrastructure interfaces scaffolded"
 
 ### Step B4: Architecture Quality Gates
 
-```claude
-Claude: /create-spec "Architecture quality gates — dependency enforcement, openapi generation workflow, ci wiring. Ensure coverage for all domains listed in the Feature Mapping table of freshstart/refined-plan/implementation-plan.md."
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Architecture quality gates — dependency enforcement, openapi generation workflow, ci wiring. Ensure coverage for all domains listed in the Feature Mapping table of freshstart/refined-plan/implementation-plan.md."
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - Architecture tests (dependency-cruiser/ts-auto-guard) ensuring layer boundaries

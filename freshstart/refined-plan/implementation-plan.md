@@ -96,10 +96,16 @@ Each stream must integrate with EOS tasks (`/create-spec`, `/create-tasks`, `/ex
 - **Security & Ops** (Phase E): `docs/standards/security/`, `docs/standards/operations/`
 
 Verification uses EOS runner sequences:
-1. `Claude: /create-spec "..."` with explicit DSL navigation + variable bindings.
-2. `Claude: /create-tasks` to emit deterministic task lists.
-3. `Claude: /execute-tasks` to drive implementation and verification (blocking tests on Step 6).
-4. Local confirmation via `pnpm verify:local` and targeted package commands per phase.
+
+<user-action-required>
+⚠️ USER ACTION: Run each EOS cycle by typing the commands below directly into Claude Code:
+
+1. /create-spec "<phase-specific description with DSL routing and variable bindings>"
+2. /create-tasks
+3. /execute-tasks
+</user-action-required>
+
+After Claude completes the EOS run, confirm locally via `pnpm verify:local` and targeted package commands per phase.
 
 ## Feature Mapping
 

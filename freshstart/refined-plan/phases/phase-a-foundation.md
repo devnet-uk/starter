@@ -55,11 +55,18 @@ All bullets must be green in a single `/execute-tasks` session before moving to 
 
 ### Step A1: Workspace & Repo Validation
 
-```claude
-Claude: /create-spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - New git workspace bootstrapped at `${DEVNET_HOME:-~/Projects/devnet/}` (empty dir created, `git init`, remote configured via `git remote add origin ${DEVNET_GIT_REMOTE:-<github-url>}` when provided)
@@ -75,11 +82,18 @@ git commit -m "chore(phase-a): workspace baseline verified"
 
 ### Step A2: Tooling & Automation Hardening
 
-```claude
-Claude: /create-spec "Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98"
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98"
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - `tsconfig.base.json` aligned with strict mode and project references
@@ -95,11 +109,18 @@ git commit -m "chore(phase-a): tooling automation hardened"
 
 ### Step A3: Engineering OS Integration
 
-```claude
-Claude: /create-spec "Engineering OS integration — scripts wiring, standards routing, verification runner smoke test"
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Engineering OS integration — scripts wiring, standards routing, verification runner smoke test"
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - `scripts/` updated with EOS helpers (include helper, verification runner configs)

@@ -64,11 +64,18 @@ fi
 
 ### Step E1: Observability & Reliability
 
-```claude
-Claude: /create-spec "Observability foundation — structured logging, metrics, tracing, health checks"
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Observability foundation — structured logging, metrics, tracing, health checks"
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - Logging adapters integrated across API/infrastructure with correlation IDs
@@ -84,11 +91,18 @@ git commit -m "feat(phase-e): observability foundation established"
 
 ### Step E2: Security Hardening
 
-```claude
-Claude: /create-spec "Security hardening — threat model, dependency audit, secrets management validation"
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Security hardening — threat model, dependency audit, secrets management validation"
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - Completed threat model document referencing high-risk flows
@@ -104,11 +118,18 @@ git commit -m "chore(phase-e): security hardening complete"
 
 ### Step E3: Deployment & Release Operations
 
-```claude
-Claude: /create-spec "Deployment automation — staging/prod workflows, infra scripts, rollback procedures"
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Deployment automation — staging/prod workflows, infra scripts, rollback procedures"
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - Turbo tasks for build/deploy pipelines defined
@@ -124,11 +145,18 @@ git commit -m "chore(phase-e): deployment workflows automated"
 
 ### Step E4: Documentation & Transition
 
-```claude
-Claude: /create-spec "Documentation & handoff — runbooks, onboarding guide, final checkpoint"
-Claude: /create-tasks
-Claude: /execute-tasks
-```
+<user-action-required>
+⚠️ USER ACTION: Type the following commands directly into Claude Code:
+
+1. Copy and paste this command:
+   /create-spec "Documentation & handoff — runbooks, onboarding guide, final checkpoint"
+
+2. After the spec is created, type:
+   /create-tasks
+
+3. Once tasks are generated, type:
+   /execute-tasks
+</user-action-required>
 
 **Deliverables**
 - Updated `DEVNET-CHECKPOINT.txt` with final status, metrics, outstanding risks
