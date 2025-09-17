@@ -11,13 +11,15 @@
     "format": "biome format . --write",
     "validate:standards": "node scripts/validate-standards.mjs",
     "verify:local": "node scripts/verification-shim.mjs",
-    "lint:governance": "node scripts/lint-governance.mjs"
+    "lint:governance": "node scripts/lint-governance.mjs",
+    "eos:run": "node scripts/eos-run.mjs"
   },
   "engines": {
     "node": ">=20"
   },
   "packageManager": "pnpm@10.14.0",
   "devDependencies": {
+    "@anthropic-ai/claude-code": "^1.0.117",
     "@biomejs/biome": "2.2.2",
     "@repo/tsconfig": "workspace:*",
     "@types/node": "^24.3.1",

@@ -4,7 +4,7 @@
 // substitutes variables, enforces allowlist, executes with timeout,
 // and reports pass/fail with optional blocking behavior.
 
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative, basename } from 'node:path';
 import { exec } from 'node:child_process';
 
@@ -38,20 +38,22 @@ function read(p) {
 function extractVerificationBlocks(content) {
   const blocks = [];
   const reBlock = /<verification-block\s+context-check="([^"]+)">([\s\S]*?)<\/verification-block>/g;
-  let m;
-  while ((m = reBlock.exec(content))) {
-    const ctx = m[1];
-    const body = m[2];
+  let blockMatch = reBlock.exec(content);
+  while (blockMatch) {
+    const ctx = blockMatch[1];
+    const body = blockMatch[2];
     const tests = [];
     const reTest = /<test\s+name="([^"]+)">([\s\S]*?)<\/test>/g;
-    let t;
-    while ((t = reTest.exec(body))) {
-      const name = t[1];
-      const text = t[2];
+    let testMatch = reTest.exec(body);
+    while (testMatch) {
+      const name = testMatch[1];
+      const text = testMatch[2];
       const getField = (label) => {
         const r = new RegExp(`\\n\\s*${label}:\\s*(.+)`);
         const mm = r.exec(text);
-        if (!mm) return undefined;
+        if (!mm) {
+          return undefined;
+        }
         const raw = mm[1].trim();
         // Only strip surrounding quotes if both present; otherwise keep as-is
         if (raw.startsWith('"') && raw.endsWith('"') && raw.length >= 2) {
@@ -61,8 +63,14 @@ function extractVerificationBlocks(content) {
       };
       const parseBool = (v, fallback = false) => (v ? /true/i.test(v) : fallback);
       const parseArray = (v) => {
-        if (!v) return [];
-        try { return JSON.parse(v.replace(/'/g, '"')); } catch { return []; }
+        if (!v) {
+          return [];
+        }
+        try {
+          return JSON.parse(v.replace(/'/g, '"'));
+        } catch {
+          return [];
+        }
       };
       tests.push({
         name,
@@ -75,8 +83,10 @@ function extractVerificationBlocks(content) {
         DEPENDS_ON: parseArray(getField('DEPENDS_ON')),
         VARIABLES: parseArray(getField('VARIABLES')),
       });
+      testMatch = reTest.exec(body);
     }
     blocks.push({ context: ctx, tests });
+    blockMatch = reBlock.exec(content);
   }
   return blocks;
 }
@@ -112,15 +122,21 @@ const DISALLOWED = [
   /\bchmod\b/, /\brm\b/, /\bmv\b/, /\binstall\b/,
 ];
 function isAllowedCommand(cmd) {
-  for (const rx of DISALLOWED) if (rx.test(cmd)) return false;
+  for (const rx of DISALLOWED) {
+    if (rx.test(cmd)) {
+      return false;
+    }
+  }
   // sed is allowed but not with -i
-  if (/\bsed\b/.test(cmd) && /\s-i\b/.test(cmd)) return false;
+  if (/\bsed\b/.test(cmd) && /\s-i\b/.test(cmd)) {
+    return false;
+  }
   return true;
 }
 
 function execWithTimeout(cmd, timeoutMs = 30000) {
   return new Promise((resolve) => {
-    const child = exec(cmd, { timeout: timeoutMs, shell: '/bin/bash' }, (err, stdout, stderr) => {
+    exec(cmd, { timeout: timeoutMs, shell: '/bin/bash' }, (err, stdout, stderr) => {
       resolve({ code: err ? 1 : 0, stdout, stderr, error: err });
     });
   });
@@ -132,8 +148,12 @@ function topoSort(tests) {
   const temp = new Set();
   const order = [];
   function visit(n) {
-    if (visited.has(n)) return;
-    if (temp.has(n)) throw new Error(`Cyclic dependency involving '${n}'`);
+    if (visited.has(n)) {
+      return;
+    }
+    if (temp.has(n)) {
+      throw new Error(`Cyclic dependency involving '${n}'`);
+    }
     temp.add(n);
     const t = nameToTest.get(n);
     (t?.DEPENDS_ON || []).forEach(visit);
@@ -141,7 +161,9 @@ function topoSort(tests) {
     visited.add(n);
     order.push(n);
   }
-  tests.forEach((t) => visit(t.name));
+  tests.forEach((t) => {
+    visit(t.name);
+  });
   return order.map((n) => nameToTest.get(n));
 }
 
@@ -150,7 +172,11 @@ async function main() {
   for (const f of files) {
     const content = read(f);
     const blocks = extractVerificationBlocks(content);
-    blocks.forEach((b) => b.tests.forEach((t) => allTests.push({ ...t, __file: f, __context: b.context })));
+    blocks.forEach((b) => {
+      b.tests.forEach((t) => {
+        allTests.push({ ...t, __file: f, __context: b.context });
+      });
+    });
   }
   if (allTests.length === 0) {
     console.log('No verification tests found in provided files.');
@@ -159,10 +185,16 @@ async function main() {
 
   const vars = detectVars();
   // Normalize BLOCKING default to REQUIRED when unspecified
-  allTests.forEach((t) => { if (t.BLOCKING === undefined) t.BLOCKING = !!t.REQUIRED; });
+  allTests.forEach((t) => {
+    if (t.BLOCKING === undefined) {
+      t.BLOCKING = !!t.REQUIRED;
+    }
+  });
 
   let tests;
-  try { tests = topoSort(allTests); } catch (e) {
+  try {
+    tests = topoSort(allTests);
+  } catch (e) {
     console.error(`Dependency resolution error: ${e.message}`);
     process.exit(1);
   }
@@ -172,12 +204,16 @@ async function main() {
     const cmdRaw = substitute(t.TEST || '', vars);
     if (!cmdRaw) {
       results.push({ t, status: 'failed', reason: 'No TEST command' });
-      if (MODE === 'blocking' && t.BLOCKING) break;
+      if (MODE === 'blocking' && t.BLOCKING) {
+        break;
+      }
       continue;
     }
     if (!isAllowedCommand(cmdRaw)) {
       results.push({ t, status: 'failed', reason: 'Command not allowed by governance', cmd: cmdRaw });
-      if (MODE === 'blocking' && t.BLOCKING) break;
+      if (MODE === 'blocking' && t.BLOCKING) {
+        break;
+      }
       continue;
     }
     const { code, stdout, stderr } = await execWithTimeout(cmdRaw, 30000);
@@ -187,7 +223,9 @@ async function main() {
     }
     const errorMsg = substitute(t.ERROR || 'Test failed', vars);
     results.push({ t, status: 'failed', reason: errorMsg, cmd: cmdRaw, stdout, stderr });
-    if (MODE === 'blocking' && t.BLOCKING) break;
+    if (MODE === 'blocking' && t.BLOCKING) {
+      break;
+    }
   }
 
   const passed = results.filter((r) => r.status === 'passed').length;
@@ -204,18 +242,24 @@ async function main() {
   console.log(`⏭️ Skipped: ${skipped}`);
 
   if (failed > 0) {
-    console.log(`\n=== FAILED TESTS ===`);
+    console.log('\n=== FAILED TESTS ===');
     for (const r of results.filter((x) => x.status === 'failed')) {
       const origin = relative(ROOT, r.t.__file);
       console.log(`\n❌ ${r.t.name} (from ${origin})`);
       console.log(`   Error: ${r.reason}`);
-      if (r.t.FIX_COMMAND) console.log(`   Fix: ${substitute(r.t.FIX_COMMAND, vars)}`);
-      if (r.cmd) console.log(`   Command: ${r.cmd}`);
+      if (r.t.FIX_COMMAND) {
+        console.log(`   Fix: ${substitute(r.t.FIX_COMMAND, vars)}`);
+      }
+      if (r.cmd) {
+        console.log(`   Command: ${r.cmd}`);
+      }
     }
   }
 
   const blockingFailed = results.some((r) => r.status === 'failed' && r.t.BLOCKING);
-  if (MODE === 'blocking' && blockingFailed) process.exit(1);
+  if (MODE === 'blocking' && blockingFailed) {
+    process.exit(1);
+  }
 }
 
 main().catch((e) => {

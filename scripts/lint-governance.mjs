@@ -19,8 +19,11 @@ function walk(dir) {
   for (const name of readdirSync(dir)) {
     const p = join(dir, name);
     const s = statSync(p);
-    if (s.isDirectory()) walk(p);
-    else if (s.isFile() && name.endsWith('.md')) mdFiles.push(p);
+    if (s.isDirectory()) {
+      walk(p);
+    } else if (s.isFile() && name.endsWith('.md')) {
+      mdFiles.push(p);
+    }
   }
 }
 
@@ -39,27 +42,38 @@ try {
 
 const allowed = new Set();
 for (const it of lex.intents || []) {
-  if (it.key) allowed.add(String(it.key).toLowerCase());
-  if (Array.isArray(it.synonyms)) for (const s of it.synonyms) allowed.add(String(s).toLowerCase());
+  if (it.key) {
+    allowed.add(String(it.key).toLowerCase());
+  }
+  if (Array.isArray(it.synonyms)) {
+    for (const s of it.synonyms) {
+      allowed.add(String(s).toLowerCase());
+    }
+  }
 }
 
 let errors = 0;
 
 // 1) task-condition keyword validation
 const ROOT_DISPATCHER = join(STANDARDS_DIR, 'standards.md');
-const condRe = /<conditional-block\s+[^>]*task-condition=\"([^\"]+)\"/g;
+const condRe = /<conditional-block\s+[^>]*task-condition="([^"]+)"/g;
 
 function validateConditions(content, filePath, { warnOnly = false } = {}) {
-  let m;
-  while ((m = condRe.exec(content))) {
-    const tokens = m[1].split('|').map((t) => t.trim().toLowerCase()).filter(Boolean);
+  let match = condRe.exec(content);
+  while (match) {
+    const tokens = match[1].split('|').map((t) => t.trim().toLowerCase()).filter(Boolean);
     for (const t of tokens) {
       if (!allowed.has(t)) {
         const msg = `Unknown task-condition keyword '${t}' in ${relative(ROOT, filePath)} (not in lexicon)`;
-        if (warnOnly) warn(msg);
-        else { fail(msg); errors++; }
+        if (warnOnly) {
+          warn(msg);
+        } else {
+          fail(msg);
+          errors += 1;
+        }
       }
     }
+    match = condRe.exec(content);
   }
 }
 
@@ -68,7 +82,9 @@ validateConditions(readFileSync(ROOT_DISPATCHER, 'utf8'), ROOT_DISPATCHER, { war
 
 // Category dispatchers → enforce (errors)
 for (const f of mdFiles) {
-  if (f === ROOT_DISPATCHER) continue;
+  if (f === ROOT_DISPATCHER) {
+    continue;
+  }
   const txt = readFileSync(f, 'utf8');
   if (/Category Dispatcher/i.test(txt)) {
     validateConditions(txt, f, { warnOnly: false });
@@ -91,12 +107,12 @@ const disallowed = [
 
 for (const file of mdFiles) {
   const content = readFileSync(file, 'utf8');
-  let vb;
-  while ((vb = vblockRe.exec(content))) {
-    let tl;
+  let vbMatch = vblockRe.exec(content);
+  while (vbMatch) {
     testLineRe.lastIndex = 0;
-    while ((tl = testLineRe.exec(vb[0]))) {
-      const cmd = tl[1].trim();
+    let tlMatch = testLineRe.exec(vbMatch[0]);
+    while (tlMatch) {
+      const cmd = tlMatch[1].trim();
       for (const rx of disallowed) {
         if (rx.test(cmd)) {
           fail(`Governance violation in TEST command at ${relative(ROOT, file)}: '${cmd}'`);
@@ -104,7 +120,9 @@ for (const file of mdFiles) {
           break;
         }
       }
+      tlMatch = testLineRe.exec(vbMatch[0]);
     }
+    vbMatch = vblockRe.exec(content);
   }
 }
 

@@ -72,7 +72,9 @@ function extractHeadings(md) {
   const headings = [];
   for (const line of lines) {
     const m = /^(#{1,6})\s+(.+)$/.exec(line.trim());
-    if (m) headings.push(m[2].trim());
+    if (m) {
+      headings.push(m[2].trim());
+    }
   }
   return headings;
 }
@@ -80,7 +82,7 @@ function extractHeadings(md) {
 function slugify(h) {
   return h
     .toLowerCase()
-    .replace(/[\/_]/g, '-')
+    .replace(/[/_]/g, '-')
     .replace(/[`*_~]/g, '')
     .replace(/[^a-z0-9\s-]/g, '')
     .trim()
@@ -93,15 +95,17 @@ const contextChecks = new Map();
 for (const file of mdFiles) {
   const content = readFileSync(file, 'utf8');
   const re = /context-check\s*=\s*"([^"]+)"/g;
-  let m;
-  while ((m = re.exec(content))) {
-    const id = m[1];
+  re.lastIndex = 0;
+  let contextMatch = re.exec(content);
+  while (contextMatch) {
+    const id = contextMatch[1];
     if (contextChecks.has(id)) {
       fail(`Duplicate context-check id '${id}' in ${relative(ROOT, file)}; first seen in ${relative(ROOT, contextChecks.get(id))}`);
       errors++;
     } else {
       contextChecks.set(id, file);
     }
+    contextMatch = re.exec(content);
   }
 }
 info(`Collected ${contextChecks.size} unique context-check IDs.`);
@@ -115,17 +119,23 @@ for (const file of mdFiles) {
   // Enforce phrasing: must include ` from `
   let rl;
   requestLineRe.lastIndex = 0;
-  while ((rl = requestLineRe.exec(content))) {
+  rl = requestLineRe.exec(content);
+  while (rl) {
     const raw = rl[1];
     if (!/\sfrom\s/.test(raw)) {
       fail(`Non-conformant REQUEST phrasing in ${relative(ROOT, file)}: "${raw}" (missing ' from ')`);
       errors++;
     }
+    rl = requestLineRe.exec(content);
   }
-  let m;
-  while ((m = requestRe.exec(content))) {
-    const spec = m[1];
-    if (spec.includes('[')) continue; // skip placeholder examples
+  requestRe.lastIndex = 0;
+  let requestMatch = requestRe.exec(content);
+  while (requestMatch) {
+    const spec = requestMatch[1];
+    if (spec.includes('[')) {
+      requestMatch = requestRe.exec(content);
+      continue; // skip placeholder examples
+    }
     const [path, anchor] = spec.split('#');
     const full = join(ROOT, 'docs', 'standards', path.replace(/^\.\/?/, ''));
     try {
@@ -141,6 +151,7 @@ for (const file of mdFiles) {
       fail(`Missing REQUEST target file '${relative(ROOT, full)}' referenced from ${relative(ROOT, file)}`);
       errors++;
     }
+    requestMatch = requestRe.exec(content);
   }
 }
 
@@ -148,12 +159,16 @@ for (const file of mdFiles) {
 const dispatcherHint = /Category Dispatcher|Root Dispatcher/i;
 for (const file of mdFiles) {
   const content = readFileSync(file, 'utf8');
-  if (!dispatcherHint.test(content)) continue;
+  if (!dispatcherHint.test(content)) {
+    continue;
+  }
   // Heuristic: all non-empty lines should be comments or conditional-blocks or headings.
   const lines = content.split(/\r?\n/);
   for (const [i, line] of lines.entries()) {
     const trimmed = line.trim();
-    if (!trimmed) continue;
+    if (!trimmed) {
+      continue;
+    }
     const ok = trimmed.startsWith('<!--') ||
       trimmed.startsWith('<conditional-block') ||
       trimmed.startsWith('</conditional-block>') ||
@@ -174,30 +189,36 @@ const adjacency = new Map();
 for (const file of mdFiles) {
   const content = readFileSync(file, 'utf8');
   const list = [];
-  let m;
   requestRe.lastIndex = 0;
-  while ((m = requestRe.exec(content))) {
-    const spec = m[1];
-    if (spec.includes('[')) continue; // skip placeholders
-    const [path] = spec.split('#');
-    const full = join(STANDARDS_DIR, path.replace(/^\.\/?/, ''));
-    if (full !== file) list.push(full); // ignore self-references
+  let requestMatch = requestRe.exec(content);
+  while (requestMatch) {
+    const spec = requestMatch[1];
+    if (!spec.includes('[')) {
+      const [path] = spec.split('#');
+      const full = join(STANDARDS_DIR, path.replace(/^\.\/?/, ''));
+      if (full !== file) {
+        list.push(full); // ignore self-references
+      }
+    }
+    requestMatch = requestRe.exec(content);
   }
   adjacency.set(file, list);
 }
 
 // DFS for cycle detection and depth calculation
-const WHITE = 0, GRAY = 1, BLACK = 2;
+const WHITE = 0;
+const GRAY = 1;
+const BLACK = 2;
 const color = new Map(mdFiles.map((f) => [f, WHITE]));
-let hasCycle = false;
 function dfs(u, stack = []) {
   color.set(u, GRAY);
   for (const v of adjacency.get(u) || []) {
-    if (!color.has(v)) continue; // outside standards dir
+    if (!color.has(v)) {
+      continue; // outside standards dir
+    }
     if (color.get(v) === WHITE) {
       dfs(v, stack.concat([u]));
     } else if (color.get(v) === GRAY) {
-      hasCycle = true;
       const cyclePath = stack.concat([u, v]).map((p) => relative(ROOT, p)).join(' -> ');
       fail(`Routing cycle detected: ${cyclePath}`);
       errors++;

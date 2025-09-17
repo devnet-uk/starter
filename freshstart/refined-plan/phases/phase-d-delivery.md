@@ -75,6 +75,9 @@ fi
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "API delivery — hono routes generated from contracts, validation middleware, integration tests. Reference features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md for endpoint coverage."
 </user-action-required>
 
 **Deliverables**
@@ -106,6 +109,9 @@ git commit -m "feat(phase-d): api delivery aligned to contracts"
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Frontend FSD migration — reorganize Next.js app, implement prioritized journeys. Incorporate requirements from features/ui-components/specification.md, features/auth/specification.md, and features/organizations/specification.md."
 </user-action-required>
 
 **Deliverables**
@@ -137,6 +143,9 @@ git commit -m "feat(phase-d): frontend migrated to feature-sliced design"
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Integrated experience testing — playwright suites, contract ↔ client smoke checks, ci pipeline. Build journeys using features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
 </user-action-required>
 
 **Deliverables**

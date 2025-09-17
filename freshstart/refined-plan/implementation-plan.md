@@ -103,6 +103,9 @@ Verification uses EOS runner sequences:
 1. /create-spec "<phase-specific description with DSL routing and variable bindings>"
 2. /create-tasks
 3. /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "<phase-specific description with DSL routing and variable bindings>"
 </user-action-required>
 
 After Claude completes the EOS run, confirm locally via `pnpm verify:local` and targeted package commands per phase.

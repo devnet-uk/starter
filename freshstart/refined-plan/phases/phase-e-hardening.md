@@ -75,6 +75,9 @@ fi
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Observability foundation — structured logging, metrics, tracing, health checks"
 </user-action-required>
 
 **Deliverables**
@@ -102,6 +105,9 @@ git commit -m "feat(phase-e): observability foundation established"
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Security hardening — threat model, dependency audit, secrets management validation"
 </user-action-required>
 
 **Deliverables**
@@ -129,6 +135,9 @@ git commit -m "chore(phase-e): security hardening complete"
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Deployment automation — staging/prod workflows, infra scripts, rollback procedures"
 </user-action-required>
 
 **Deliverables**
@@ -156,6 +165,9 @@ git commit -m "chore(phase-e): deployment workflows automated"
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Documentation & handoff — runbooks, onboarding guide, final checkpoint"
 </user-action-required>
 
 **Deliverables**

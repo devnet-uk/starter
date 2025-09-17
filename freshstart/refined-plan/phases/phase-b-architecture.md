@@ -73,6 +73,9 @@ Ensure Phase A checkpoints marked complete in `DEVNET-CHECKPOINT.txt` before sta
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Contracts package bootstrap — zod schemas, HTTP contracts, OpenAPI automation. Pull requirements from features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md."
 </user-action-required>
 
 **Deliverables**
@@ -103,6 +106,9 @@ git commit -m "feat(phase-b): contracts package established"
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Core shared kernel — entities, value objects, domain events, result/guard utilities. Reference terminology across features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
 </user-action-required>
 
 **Deliverables**
@@ -133,6 +139,9 @@ git commit -m "feat(phase-b): core shared kernel implemented"
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Infrastructure scaffolding — repository/service interfaces, anti-corruption layers, shared mapper strategy. Incorporate integration needs from features/storage/specification.md, features/email/specification.md, features/payments/specification.md, and features/api/specification.md."
 </user-action-required>
 
 **Deliverables**
@@ -163,6 +172,9 @@ git commit -m "feat(phase-b): infrastructure interfaces scaffolded"
 
 3. Once tasks are generated, type:
    /execute-tasks
+
+Or run the automation command:
+   pnpm eos:run --spec "Architecture quality gates — dependency enforcement, openapi generation workflow, ci wiring. Ensure coverage for all domains listed in the Feature Mapping table of freshstart/refined-plan/implementation-plan.md."
 </user-action-required>
 
 **Deliverables**
