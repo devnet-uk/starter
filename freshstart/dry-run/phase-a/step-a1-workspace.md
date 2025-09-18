@@ -13,7 +13,7 @@
 > - New git workspace bootstrapped at `${DEVNET_HOME:-~/Projects/devnet/}` (empty dir created, `git init`, remote configured via `git remote add origin ${DEVNET_GIT_REMOTE}` when provided)
 > - Verified workspace status logged in `DEVNET-CHECKPOINT.txt`
 > - `.nvmrc`, `.npmrc` (if required), `pnpm-workspace.yaml`, and `turbo.json` regenerated or confirmed
-> - `.env.example` refreshed with documented variables; link to `devnet-plan/ENV-VARS.md`
+> - `.env.example` refreshed with documented variables; link to `freshstart/refined-plan/ENV-VARS.md`
 >
 > **Commit Point**
 > ```bash
@@ -33,7 +33,7 @@
      - Initialize git repository (`git init`) and configure the `origin` remote to ``${DEVNET_GIT_REMOTE}``.
      - Verify working directory (`pwd`, compare against `$(cd "${DEVNET_HOME}" && pwd)`), confirm `git status` clean.
      - Confirm `git config --get remote.origin.url` matches ``${DEVNET_GIT_REMOTE}`` when provided.
-     - List and diff `pnpm-workspace.yaml`, `turbo.json`, `.nvmrc`; confirm Node 22 alignment.
+     - List and diff `pnpm-workspace.yaml`, `turbo.json`, `.nvmrc`, and `.npmrc`; confirm Node 22 alignment and workspace package scopes.
      - Inspect or regenerate `.env.example`; ensure `DEVNET_PORT_API=4000`, `DEVNET_PORT_WEB=4001`; document linkage to `ENV-VARS.md`.
      - Optionally run `pnpm install --frozen-lockfile` (or dry-run) to confirm workspace integrity.
      - Update `DEVNET-CHECKPOINT.txt` / `DEVNET-PROGRESS.md` status entries for Step A1.
@@ -68,7 +68,7 @@ git config --get remote.origin.url
 
 - Workspace location confirmed; quick check prints `✅` at `${DEVNET_HOME}`.
 - Origin remote aligned to `${DEVNET_GIT_REMOTE}` (or intentional override documented).
-- `pnpm-workspace.yaml`, `turbo.json`, `.nvmrc` confirmed or regenerated to match standards (Node 22 LTS, Turbo present).
+- `pnpm-workspace.yaml`, `turbo.json`, `.nvmrc`, and `.npmrc` confirmed or regenerated to match standards (Node 22 LTS, Turbo present, registry config aligned).
 - `.env.example` refreshed with API/web ports and documented linkage to `freshstart/refined-plan/ENV-VARS.md`.
 - `DEVNET-CHECKPOINT.txt` notes completion of Phase A Step A1; `DEVNET-PROGRESS.md` checkbox toggled.
 - Standards-driven verification reports a green workspace baseline via `/execute-tasks` output.

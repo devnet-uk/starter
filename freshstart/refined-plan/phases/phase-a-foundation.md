@@ -1,6 +1,14 @@
 # Phase A: Engineering OS Foundation
 
+<!-- CLAUDE CODE EXECUTION MANIFEST
+  - Read ALL sections above "START IMPLEMENTATION" for context only
+  - Begin execution at: "## START IMPLEMENTATION HERE"
+  - Do not execute anything in sections marked "CONTEXT ONLY"
+  - Follow implementation steps sequentially (A1, A2, A3)
+-->
+
 ## Overview
+<!-- CONTEXT ONLY - DO NOT EXECUTE -->
 
 - Phase: Engineering OS Foundation
 - Coverage Target: Configure repo defaults to ≥98% (no code coverage enforcement yet)
@@ -36,41 +44,31 @@ fi
 ```
 
 ## Phase Acceptance
-
+<!-- CONTEXT ONLY - DO NOT EXECUTE -->
 All bullets must be green in a single `/execute-tasks` session before moving to Phase B:
 - `pnpm verify:local` passes with Husky/lint-staged configured and `"prepare": "husky install"`
 - Turborepo + pnpm workspaces resolved (`pnpm-workspace.yaml`, `turbo.json`, `.nvmrc` aligned to Node 22 LTS)
 - Coverage threshold raised to 98 (Enforced via Jest/Vitest config or coverage tooling used in repo)
-- `.env.example` established with documented ports + placeholder secrets; `DEVNET-ENV.md` stub updated
+- `.env.example` established with documented ports + placeholder secrets; `ENV-VARS.md` stub updated
 - `DEVNET-CHECKPOINT.txt` and `DEVNET-PROGRESS.md` updated with Phase A exit status
 
 ## Standards & Intents
+<!-- CONTEXT ONLY - DO NOT EXECUTE -->
 
 - Monorepo: `docs/standards/development/monorepo-setup.md`
 - TypeScript: `docs/standards/development/typescript-config.md`
 - Quality automation: `docs/standards/development/local-quality.md`, `testing-strategy.md`
 - Git workflow: `docs/standards/development/git-workflow.md`
 
-## Implementation Steps
-
+## START IMPLEMENTATION HERE
+<!-- CLAUDE CODE: Begin execution with Step A1 below -->
 ### Step A1: Workspace & Repo Validation
 
+### Step A1.1
 ```bash
-if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
     echo "🤖 Automated mode detected - executing via pnpm"
-    pnpm eos:run --spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
+    pnpm --dir "${DEVNET_STARTER_HOME:-$HOME/Projects/devnet.starter}" eos:run --spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
     echo "AUTOMATED" > .step-a1-mode
-else
-    echo "👤 Manual mode - Claude commands required"
-    echo "MANUAL" > .step-a1-mode
-    echo ""
-    echo "════════════════════════════════════════════════════════════════"
-    echo "  Execute these Claude Code commands now:"
-    echo "  1. /create-spec \"DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding\""
-    echo "  2. /create-tasks"
-    echo "  3. /execute-tasks"
-    echo "════════════════════════════════════════════════════════════════"
-fi
 ```
 
 **Deliverables**
@@ -79,6 +77,7 @@ fi
 - `.nvmrc`, `.npmrc` (if required), `pnpm-workspace.yaml`, and `turbo.json` regenerated or confirmed
 - `.env.example` refreshed with documented variables; link to `devnet-plan/ENV-VARS.md`
 
+### Step A1.2
 **Commit Point**
 ```bash
 git add pnpm-workspace.yaml turbo.json .nvmrc .env.example DEVNET-CHECKPOINT.txt DEVNET-PROGRESS.md
@@ -87,25 +86,11 @@ git commit -m "chore(phase-a): workspace baseline verified"
 
 ### Step A2: Tooling & Automation Hardening
 
-<user-action-required>
 ```bash
-if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
     echo "🤖 Automated mode detected - executing via pnpm"
     pnpm eos:run --spec "Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98"
     echo "AUTOMATED" > .step-a2-mode
-else
-    echo "👤 Manual mode - Claude commands required"
-    echo "MANUAL" > .step-a2-mode
-    echo ""
-    echo "════════════════════════════════════════════════════════════════"
-    echo "  Execute these Claude Code commands now:"
-    echo "  1. /create-spec \"Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98\""
-    echo "  2. /create-tasks"
-    echo "  3. /execute-tasks"
-    echo "════════════════════════════════════════════════════════════════"
-fi
 ```
-</user-action-required>
 
 **Deliverables**
 - `tsconfig.base.json` aligned with strict mode and project references
@@ -121,25 +106,11 @@ git commit -m "chore(phase-a): tooling automation hardened"
 
 ### Step A3: Engineering OS Integration
 
-<user-action-required>
 ```bash
-if [ "${DEVNET_EOS_AUTOMATE}" = "true" ]; then
     echo "🤖 Automated mode detected - executing via pnpm"
     pnpm eos:run --spec "Engineering OS integration — scripts wiring, standards routing, verification runner smoke test"
     echo "AUTOMATED" > .step-a3-mode
-else
-    echo "👤 Manual mode - Claude commands required"
-    echo "MANUAL" > .step-a3-mode
-    echo ""
-    echo "════════════════════════════════════════════════════════════════"
-    echo "  Execute these Claude Code commands now:"
-    echo "  1. /create-spec \"Engineering OS integration — scripts wiring, standards routing, verification runner smoke test\""
-    echo "  2. /create-tasks"
-    echo "  3. /execute-tasks"
-    echo "════════════════════════════════════════════════════════════════"
-fi
 ```
-</user-action-required>
 
 **Deliverables**
 - `scripts/` updated with EOS helpers (include helper, verification runner configs)

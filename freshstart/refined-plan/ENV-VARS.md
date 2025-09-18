@@ -1,6 +1,6 @@
 # Environment Variables for Refined DevNet Plan Execution
 
-These variables mirror the controls defined in `devnet-plan/ENV-VARS.md` and remain the canonical source for configuring Engineering OS workflows. Set them in your shell profile or load them via direnv; never commit secrets.
+Set them in your shell profile or load them via direnv; never commit secrets.
 
 - `DEVNET_HOME` — absolute path to the primary implementation repository (default: `~/Projects/devnet`).
 - `ENGINEERING_OS_HOME` — absolute path to the standards reference repository (default: `~/Projects/devnet.starter`).

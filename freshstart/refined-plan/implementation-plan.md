@@ -77,7 +77,7 @@ Parallel swimlanes run through each phase:
 3. **Platform & Delivery Stream** (Phases D→E): Implements API adapters, Next.js Feature-Sliced layers, observability, deployment workflows, and experience polish.
 4. **Documentation & Change Management Stream** (All phases): Maintains ADRs, developer docs, and standards routing; ensures new environment variables are documented in `.env.example` and `docs/standards` references.
 
-Each stream must integrate with EOS tasks (`/create-spec`, `/create-tasks`, `/execute-tasks`) and log progress in `DEVNET-CHECKPOINT.txt`.
+Each stream must integrate with EOS tasks (these are Claude custom slash commands) (`/create-spec`, `/create-tasks`, `/execute-tasks`) and log progress in `DEVNET-CHECKPOINT.txt`.
 
 ## Phase Summaries
 
@@ -97,21 +97,7 @@ Each stream must integrate with EOS tasks (`/create-spec`, `/create-tasks`, `/ex
 
 Verification uses EOS runner sequences:
 
-<user-action-required>
-⚠️ USER ACTION: Run each EOS cycle by typing the commands below directly into Claude Code:
-
-1. /create-spec "<phase-specific description with DSL routing and variable bindings>"
-2. /create-tasks
-3. /execute-tasks
-
-If `DEVNET_EOS_AUTOMATE` is `true`, run:
-   pnpm eos:run --spec "<phase-specific description with DSL routing and variable bindings>"
-Otherwise, stick with the manual slash commands above.
-</user-action-required>
-
-Set `DEVNET_EOS_AUTOMATE=true` in your environment (see `freshstart/refined-plan/ENV-VARS.md`) when you want Claude to favor the CLI path by default.
-
-After Claude completes the EOS run, confirm locally via `pnpm verify:local` and targeted package commands per phase.
+Set `DEVNET_EOS_AUTOMATE=true` in your environment (see `freshstart/refined-plan/ENV-VARS.md`).
 
 ## Feature Mapping
 
