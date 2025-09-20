@@ -41,6 +41,7 @@ fi
 - `/execute-tasks` run referencing architecture standards returns green
 
 ## Manual Step Runner
+Context Reset Tip: After you commit each step, clear the agent context and start the next step using the Handoff Template in `freshstart/user-driven-plan/implementation-plan.md` (see "Context Resets & Handoff").
 
 ### Step B1: Contracts Package Creation
 **Message to send:**
@@ -48,6 +49,10 @@ fi
 /create-spec "Contracts package bootstrap — zod schemas, HTTP contracts, OpenAPI automation. Pull requirements from features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase B / Step B1
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (B2)
 ```
 
 **Key Deliverables**
@@ -68,6 +73,10 @@ git commit -m "feat(phase-b): contracts package established"
 /create-spec "Core shared kernel — entities, value objects, domain events, result/guard utilities. Reference terminology across features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase B / Step B2
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (B3)
 ```
 
 **Key Deliverables**
@@ -87,6 +96,10 @@ git commit -m "feat(phase-b): core shared kernel implemented"
 /create-spec "Infrastructure scaffolding — repository/service interfaces, anti-corruption layers, shared mapper strategy. Incorporate integration needs from features/storage/specification.md, features/email/specification.md, features/payments/specification.md, and features/api/specification.md."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase B / Step B3
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (B4)
 ```
 
 **Key Deliverables**
@@ -106,6 +119,10 @@ git commit -m "feat(phase-b): infrastructure interfaces scaffolded"
 /create-spec "Architecture quality gates — dependency enforcement, openapi generation workflow, ci wiring. Ensure coverage for all domains listed in the Feature Mapping table of freshstart/user-driven-plan/implementation-plan.md."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase B / Step B4
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (Phase C / Wave C1)
 ```
 
 **Key Deliverables**

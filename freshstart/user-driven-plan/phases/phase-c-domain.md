@@ -43,12 +43,18 @@ fi
 ## Manual Wave Runner
 Run the waves sequentially. After each `/execute-tasks`, execute `pnpm --filter @repo/core test -- --coverage` to validate coverage before committing.
 
+Context Reset Tip: After committing each wave, clear the agent context and start the next wave using the Handoff Template in `freshstart/user-driven-plan/implementation-plan.md` (see "Context Resets & Handoff").
+
 ### Wave C1: Authentication & Identity
 **Message to send:**
 ```
 /create-spec "Authentication domain wave — implement entities, MFA policies, and contract mappers. Load requirements from features/auth/specification.md and features/users/specification.md."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase C / Wave C1
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (C2)
 ```
 
 **Scope Highlights**
@@ -73,6 +79,10 @@ git commit -m "feat(phase-c): authentication domain wave complete"
 /create-spec "Organizations domain wave — RBAC policies, invitations, membership invariants. Use features/organizations/specification.md and features/users/specification.md as inputs."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase C / Wave C2
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (C3)
 ```
 
 **Scope Highlights**
@@ -97,6 +107,10 @@ git commit -m "feat(phase-c): organization domain wave complete"
 /create-spec "Billing domain wave — subscription lifecycle, provider abstraction, reconciliation. Pull data from features/payments/specification.md and features/api/specification.md."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase C / Wave C3
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (C4)
 ```
 
 **Scope Highlights**
@@ -121,6 +135,10 @@ git commit -m "feat(phase-c): billing domain wave complete"
 /create-spec "Platform services domain wave — AI chat, storage, email, audit logging. Reference features/ui-components/specification.md, features/storage/specification.md, features/email/specification.md, and features/api/specification.md."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase C / Wave C4
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (Phase D / Step D1)
 ```
 
 **Scope Highlights**

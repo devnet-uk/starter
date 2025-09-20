@@ -40,6 +40,7 @@ fi
 - Final `/execute-tasks` referencing security + operations standards succeeds
 
 ## Manual Step Runner
+Context Reset Tip: After you commit each step, clear the agent context and start the next step using the Handoff Template in `freshstart/user-driven-plan/implementation-plan.md` (see "Context Resets & Handoff").
 
 ### Step E1: Observability & Reliability
 **Message to send:**
@@ -47,6 +48,10 @@ fi
 /create-spec "Observability foundation — structured logging, metrics, tracing, health checks"
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase E / Step E1
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (E2)
 ```
 
 **Key Deliverables**
@@ -67,6 +72,10 @@ git commit -m "feat(phase-e): observability foundation established"
 /create-spec "Security hardening — threat model, dependency audit, secrets management validation"
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase E / Step E2
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (E3)
 ```
 
 **Key Deliverables**
@@ -87,6 +96,10 @@ git commit -m "chore(phase-e): security hardening complete"
 /create-spec "Deployment automation — staging/prod workflows, infra scripts, rollback procedures"
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase E / Step E3
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (E4)
 ```
 
 **Key Deliverables**
@@ -107,6 +120,10 @@ git commit -m "chore(phase-e): deployment workflows automated"
 /create-spec "Documentation & handoff — runbooks, onboarding guide, final checkpoint"
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase E / Step E4
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (release/tag)
 ```
 
 **Key Deliverables**

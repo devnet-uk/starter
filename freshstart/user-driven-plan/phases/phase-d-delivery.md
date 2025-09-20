@@ -40,6 +40,7 @@ fi
 - `pnpm verify:local`, `pnpm --filter @repo/api test`, `pnpm --filter @repo/web lint`, and `pnpm --filter @repo/web test` all green
 
 ## Manual Step Runner
+Context Reset Tip: After you commit each step, clear the agent context and start the next step using the Handoff Template in `freshstart/user-driven-plan/implementation-plan.md` (see "Context Resets & Handoff").
 
 ### Step D1: API Delivery Alignment
 **Message to send:**
@@ -47,6 +48,10 @@ fi
 /create-spec "API delivery — hono routes generated from contracts, validation middleware, integration tests. Reference features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/api/specification.md for endpoint coverage."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase D / Step D1
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (D2)
 ```
 
 **Key Deliverables**
@@ -67,6 +72,10 @@ git commit -m "feat(phase-d): api delivery aligned to contracts"
 /create-spec "Frontend FSD migration — reorganize Next.js app, implement prioritized journeys. Incorporate requirements from features/ui-components/specification.md, features/auth/specification.md, and features/organizations/specification.md."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase D / Step D2
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (D3)
 ```
 
 **Key Deliverables**
@@ -86,6 +95,10 @@ git commit -m "feat(phase-d): frontend migrated to feature-sliced design"
 /create-spec "Integrated experience testing — playwright suites, contract ↔ client smoke checks, ci pipeline. Build journeys using features/auth/specification.md, features/organizations/specification.md, features/payments/specification.md, and features/ui-components/specification.md."
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase D / Step D3
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (Phase E / Step E1)
 ```
 
 **Key Deliverables**
@@ -105,9 +118,9 @@ git commit -m "test(phase-d): integrated experience suites added"
 - Update progress tracker, tag release `v0.4.0-phase-d` (or similar)
 
 ## References
-- `docs/standards/backend/hono.md`
+- `docs/standards/stack-specific/hono-api.md`
 - `docs/standards/development/api-contracts.md`
-- `docs/standards/frontend/feature-sliced-design.md`
-- `docs/standards/frontend/nextjs.md`
-- `docs/standards/testing/e2e.md`
+- `docs/standards/architecture/feature-sliced-design.md`
+- `docs/standards/stack-specific/nextjs-frontend.md`
+- `docs/standards/development/testing-strategy.md`
 - Feature specs for auth, organizations, payments, ui-components

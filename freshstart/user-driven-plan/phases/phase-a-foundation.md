@@ -38,12 +38,23 @@ All items must pass inside a single `/execute-tasks` cycle before you move to Ph
 ## Manual Step Runner
 Follow each step in order. Paste the command bundle exactly as shown, then collaborate with the assistant to finish the work and commit.
 
+Context Reset Tip: After you commit each step, clear the agent context and start the next step using the Handoff Template in `freshstart/user-driven-plan/implementation-plan.md` (see "Context Resets & Handoff").
+
 ### Step A1: Workspace & Repo Validation
 **Message to send:**
 ```
 /create-spec "DevNet workspace bootstrap + preflight — initialize empty repo, set origin remote, verify pnpm/turbo alignment, env scaffolding"
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase A / Step A1
+# - Acceptance: which checklist bullets are satisfied
+# - Verification: commands to run (and what to paste back)
+# - Files: changed paths
+# - Decisions: assumptions/non-obvious choices
+# - Commit: suggested commit message
+# - Next Step Commands: the exact bundle for Step A2
 ```
 
 **Key Deliverables**
@@ -64,6 +75,10 @@ git commit -m "chore(phase-a): workspace baseline verified"
 /create-spec "Tooling hardening — TypeScript strict, Biome strict, Husky + lint-staged + commitlint, coverage >=98"
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase A / Step A2
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (A3)
 ```
 
 **Key Deliverables**
@@ -84,6 +99,10 @@ git commit -m "chore(phase-a): tooling automation hardened"
 /create-spec "Engineering OS integration — scripts wiring, standards routing, verification runner smoke test"
 /create-tasks
 /execute-tasks
+
+# On completion, output a Context Pack for handoff with:
+# - Phase/Step: Phase A / Step A3
+# - Acceptance, Verification commands, Files, Decisions, Commit message, Next Step Commands (Phase B / Step B1)
 ```
 
 **Key Deliverables**

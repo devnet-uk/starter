@@ -29,6 +29,63 @@ Use the following interaction recipe for each implementation step:
 
 > Keep the slash commands intact. They map to the same EOS automations as the refined plan; the difference is that you trigger them instead of the agent dispatcher.
 
+## Two-Actor Protocol (User ↔ AI Agent)
+- Actors only: You (the User) and the AI Agent. No other maintainers or reviewers are assumed in this plan.
+- Source of truth: the repository state and `DEVNET-CHECKPOINT.txt` / `DEVNET-PROGRESS.md`. Avoid relying on transient memory.
+
+Responsibilities
+- User: choose the phase/step, paste the Agent Brief, run the step command bundle, answer clarifications, run git commands and environment tweaks, update checkpoint/progress, and clear context between steps.
+- AI Agent: interpret the brief, inspect repo, propose tasks and focused diffs, surface assumptions, list verification commands to run, produce a succinct commit message, and call out any gating prerequisites.
+
+Step Handshake
+1) User pastes Agent Brief (once per phase).
+2) User sends the step command bundle (e.g., `/create-spec` → `/create-tasks` → `/execute-tasks`).
+3) AI Agent proposes tasks, diffs, and questions; User answers (or asks for alternatives/stubs).
+4) AI Agent returns final diffs and a commit message + verification commands.
+5) User runs commit(s), executes verification commands, and updates checkpoint/progress.
+6) User clears context and starts the next step using the Handoff Template below.
+
+## Context Resets & Handoff
+- Reset the assistant context at atomic commit boundaries (end of each step) and at phase boundaries. Avoid mid‑step resets.
+- Persist decisions in code/docs and update `DEVNET-CHECKPOINT.txt` and `DEVNET-PROGRESS.md` before resetting context.
+- Start the next step by pasting the Agent Brief for the phase and the following minimal Context Pack.
+
+Handoff Template (paste at the start of the next step):
+```
+Agent Brief: (paste from the target phase file)
+
+Context Pack
+- Phase/Step: <e.g., Phase B / Step B2>
+- Commit: <SHA or "uncommitted">
+- Acceptance: <which bullets are satisfied>
+- Verification: <key lines from pnpm verify:local or verification-shim>
+- Files: <paths changed>
+- Decisions: <non-obvious choices that affect later steps>
+
+Next Step Commands
+/create-spec "<step description>"
+/create-tasks
+/execute-tasks
+```
+
+### Handoff Curation Protocol (Two Actors)
+- Default curator: the AI Agent composes a filled Context Pack at the end of each step.
+- Finalizer: the User validates/edits, adds the commit SHA and any local command outputs, then pastes it to start the next step after clearing context.
+
+Field ownership
+- Phase/Step: AI Agent proposes; User confirms.
+- Commit: User runs `git rev-parse --short HEAD` and inserts the SHA (or writes "uncommitted").
+- Acceptance: AI Agent enumerates satisfied bullets; User confirms match with repo state.
+- Verification: AI Agent lists which commands to run; User pastes key result lines.
+- Files: AI Agent lists changed paths; User corrects if manual changes deviated.
+- Decisions: AI Agent summarizes assumptions/decisions; User edits if needed.
+- Next Step Commands: AI Agent provides the `/create-spec` bundle for the next step.
+
+Minimal commands for the User
+- Commit SHA: `git rev-parse --short HEAD`
+- Local verification (example): `pnpm verify:local`
+- Standards verification (example): `node scripts/verification-shim.mjs --files=docs/standards/standards.md --mode=blocking`
+
 ## Phase Directory
 | Phase | Scope | Quick-Start Instructions |
 |-------|-------|--------------------------|
@@ -49,16 +106,20 @@ Use the following interaction recipe for each implementation step:
 | **Phase E — Production Hardening & Enablement** | Observability, security, docs, release ops | Logging/telemetry, deployment automations, runbooks, QA automation | `pnpm verify:local`, `pnpm --filter @repo/web e2e`, documentation linting |
 
 ## Streams & Responsibilities
-- **Tooling & Automation Stream**: Keeps EOS scripts, linting, type-checking, and verification runner green.
-- **Domain & Contracts Stream**: Produces Zod contracts, aggregates, value objects, and application services.
-- **Platform & Delivery Stream**: Implements API adapters, Next.js Feature-Sliced layers, and observability wiring.
-- **Documentation & Change Management Stream**: Maintains ADRs, developer docs, and standards routing; documents environment variables.
+- Conceptual streams (executed by the two actors):
+  - Tooling & Automation: EOS scripts, lint/type/check, verification runner.
+  - Domain & Contracts: Zod contracts, entities/VOs, use cases.
+  - Platform & Delivery: API adapters, Next.js FSD layers, observability wiring.
+  - Documentation & Change: ADRs, docs, standards routing, env docs.
+- Two-Actor Mapping:
+  - AI Agent executes planning, diffs, and standards alignment within each stream.
+  - User triggers steps, runs local commands/commits, and updates checkpoints.
 
 ## Standards & Verification
 - Primary dispatcher: `docs/standards/standards.md`
 - Architecture: `docs/standards/architecture/clean-architecture.md`, `integration-strategy.md`
 - Development tooling: `docs/standards/development/monorepo-setup.md`, `typescript-config.md`, `biome-config.md`, `local-quality.md`, `testing-strategy.md`
-- Frontend: `docs/standards/frontend/feature-sliced-design.md`, `nextjs.md`
+- Frontend: `docs/standards/architecture/feature-sliced-design.md`, `docs/standards/stack-specific/nextjs-frontend.md`
 - Security & Ops (Phase E): `docs/standards/security/`, `docs/standards/operations/`
 
 ## Manual Run Notes
