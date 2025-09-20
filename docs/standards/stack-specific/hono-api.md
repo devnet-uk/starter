@@ -1,47 +1,105 @@
 # HonoJS API Patterns
 
+> Target the HonoJS version defined in `docs/standards/tech-stack.md` (currently 4.9.7 with Zod-OpenAPI).
+
+### Best Practices Checklist
+
+- Use a shared factory via `createFactory<Env>()` to register cross-cutting middleware once and generate typed apps, routers, and middleware without repeating generics.
+- Keep the `Env` definition (`Bindings`, `Variables`) authoritative and instantiate `factory.createApp()`/`new Hono<Env>()` so `c.env`/`c.var` stay type-safe in handlers and middlewares.
+- Group routes with `app.route()` / `.basePath()` and keep middleware registration close to the routes they protect; prefer route-level middleware for expensive work.
+- Validate every input with `@hono/zod-validator` or typed RPC interfaces and generate OpenAPI docs via `@hono/zod-openapi`.
+- Export a single `app.fetch` entrypoint per runtime adapter (Cloudflare/Vercel/Node) and avoid mixing runtime-specific APIs inside business logic.
+- Centralize error handling with `app.onError`/`app.notFound`, log structured diagnostics, and surface sanitized JSON responses.
+- Leverage Hono middleware for security (CORS, secure headers, rate limiting, bearer/basic auth) and caching (`hono/cache` or runtime caches) instead of hand-rolled solutions.
+- Prefer streaming helpers (`c.stream`, `c.streamText`, `c.sse`) for long-running responses and WebSocket or queue integrations for real-time workloads.
+- Wire `@hono/prometheus`, `@hono/middleware/otel`, or custom logging middleware before route registration to ensure consistent observability.
+- Cover APIs with request-level tests using `app.request`, `@hono/testing`, or `bun test`/`vitest` harnesses so contracts stay executable.
+
+## Shared Factory & Typed Context
+
+Use a single factory instance per application boundary so domain routers, middlewares, and runtime adapters all share Env types and initialization logic.
+
+```typescript
+// api/factory.ts
+import { createFactory } from 'hono/factory';
+import { contextStorage } from 'hono/context-storage';
+import { cors } from 'hono/cors';
+import { logger } from 'hono/logger';
+import { secureHeaders } from 'hono/secure-headers';
+import { requestId } from '@hono/request-id';
+
+import type { Env } from './runtime';
+
+export const apiFactory = createFactory<Env>({
+  initApp: (app) => {
+    app.use('*', contextStorage());
+    app.use('*', requestId());
+    app.use('*', logger());
+    app.use('*', cors({ origin: ['https://app.example.com'], credentials: true }));
+    app.use('*', secureHeaders());
+  },
+});
+```
+
+Compose controller pipelines with `apiFactory.createHandlers(logger(), middleware, handler)` so shared middleware keeps type inference without manual generics.
+
+Augment `ContextVariableMap` when third-party middleware attaches new variables so `c.get()` stays typed even outside modules that import your `Env`.
+
+```typescript
+// api/context.d.ts
+import type { AppUser } from './domain/users';
+
+declare module 'hono' {
+  interface ContextVariableMap {
+    requestId: string;
+    user?: AppUser;
+  }
+}
+```
+
 ## API Structure
 
 ### Route Organization
 ```typescript
 // api/index.ts
-import { Hono } from 'hono';
-import { cors } from 'hono/cors';
-import { logger } from 'hono/logger';
-import { compress } from 'hono/compress';
-import { secureHeaders } from 'hono/secure-headers';
-
+import { apiFactory } from './factory';
 import { authRoutes } from './routes/auth';
 import { userRoutes } from './routes/users';
 import { postRoutes } from './routes/posts';
 
-const app = new Hono();
+// Global middleware is registered once in apiFactory.initApp
+const app = apiFactory.createApp().basePath('/api');
 
-// Global middleware
-app.use('*', cors());
-app.use('*', logger());
-app.use('*', compress());
-app.use('*', secureHeaders());
+// Example auth middleware that enriches context
+app.use('*', async (c, next) => {
+  const token = c.req.header('authorization')?.replace('Bearer ', '');
+  if (token) {
+    const user = await verifyToken(token, c.env.DATABASE_URL);
+    if (user) c.set('user', user);
+  }
+  return next();
+});
 
-// Mount routes
+// Mount feature routers (each router handles its own local middleware)
 app.route('/auth', authRoutes);
 app.route('/users', userRoutes);
 app.route('/posts', postRoutes);
 
-// Global error handler
+// OpenAPI document endpoint (auto-detect host)
+app.doc('/api/docs', (c) => ({
+  openapi: '3.1.0',
+  info: { title: 'Example API', version: '1.0.0' },
+  servers: [{ url: new URL(c.req.url).origin, description: 'Current environment' }],
+}));
+
+// Domain-specific error handling & observability
 app.onError((err, c) => {
-  // Log the full error for internal diagnostics
-  Logger.error('API Error', err, {
-    path: c.req.path,
-    method: c.req.method,
-    requestId: c.get('requestId'), // Assuming a request ID middleware exists
-  });
-  
-  // Return a sanitized, user-friendly response
+  c.req.raw.cf?.waitUntil(reportError(err, { requestId: c.var.requestId }));
+
   if (err instanceof ValidationError) {
     return c.json({ message: err.message, fields: err.fields }, 400);
   }
-  
+
   if (err instanceof AuthError) {
     return c.json({ message: err.message }, 401);
   }
@@ -49,52 +107,197 @@ app.onError((err, c) => {
   if (err instanceof NotFoundError) {
     return c.json({ message: err.message }, 404);
   }
-  
-  return c.json({ message: 'An internal server error occurred.' }, 500);
+
+  return c.json({ message: 'Unexpected server error', requestId: c.var.requestId }, 500);
 });
+
+app.notFound((c) => c.json({ message: 'Route not found', requestId: c.var.requestId }, 404));
 
 export default app;
 ```
 
-### Typed Routes with Zod
+### Typed Environment & Runtime Adapters
+```typescript
+// api/runtime.ts
+import { handle } from 'hono/cloudflare-workers';
+import { handle as handleNode } from 'hono/node-server';
+import { handle as handleVercel } from 'hono/vercel';
+import type { KVNamespace, Queue } from '@cloudflare/workers-types';
+
+import api from './index';
+
+export { api as app };
+
+export type Env = {
+  Bindings: {
+    DATABASE_URL: string;
+    AUTH_SECRET: string;
+    QUEUE: Queue; // Cloudflare Queue binding (import type from @cloudflare/workers-types)
+    ARTICLE_KV: KVNamespace;
+    DATA_CACHE: KVNamespace;
+    ADMIN_PASSWORD: string;
+    SENTRY_DSN?: string;
+    RUNTIME_ENV: 'development' | 'staging' | 'production';
+  };
+  Variables: {
+    requestId: string;
+    user?: AppUser;
+  };
+};
+
+// Cloudflare Workers entrypoint
+export default handle(api);
+
+// Node runtime entrypoint (e.g. pnpm dev)
+export const startNode = () =>
+  handleNode(api, { port: Number(process.env.PORT ?? 3000) });
+
+// Vercel Edge/Node entrypoint
+export const config = { runtime: 'edge' };
+export const GET = handleVercel(api);
+export const POST = handleVercel(api);
+```
+
+### Typed Validation & OpenAPI
 ```typescript
 // routes/users.ts
-import { Hono } from 'hono';
-import { zValidator } from '@hono/zod-validator';
-import { z } from 'zod';
+import { cache } from 'hono/cache';
+import { createRoute, z } from '@hono/zod-openapi';
+import { apiFactory } from '../factory';
 
-const createUserSchema = z.object({
-  email: z.string().email(),
-  name: z.string().min(1).max(100),
-  password: z.string().min(12),
+const UserSchema = z
+  .object({
+    id: z.string().uuid(),
+    email: z.string().email(),
+    name: z.string(),
+    createdAt: z.string().datetime(),
+  })
+  .openapi('User');
+
+const CreateUserBody = z
+  .object({
+    email: z.string().email(),
+    name: z.string().min(1).max(100),
+    password: z.string().min(12),
+  })
+  .openapi('CreateUserBody');
+
+const GetUserParams = z.object({ id: z.string().uuid() }).openapi('GetUserParams');
+
+// createUser/getUserById live in service layer and must honour domain invariants
+const users = apiFactory.createApp();
+
+const createUserRoute = createRoute({
+  method: 'post',
+  path: '/',
+  request: { body: { content: { 'application/json': { schema: CreateUserBody } } } },
+  responses: {
+    201: {
+      description: 'User created',
+      content: { 'application/json': { schema: UserSchema } },
+    },
+  },
 });
 
-const userRoutes = new Hono()
-  .post(
-    '/',
-    zValidator('json', createUserSchema),
-    async (c) => {
-      const data = c.req.valid('json');
-      
-      const user = await createUser(data);
-      
-      return c.json(user, 201);
-    }
-  )
-  .get('/:id', async (c) => {
-    const id = c.req.param('id');
-    
-    const user = await getUserById(id);
-    
-    if (!user) {
-      return c.json({ error: 'User not found' }, 404);
-    }
-    
-    return c.json(user);
-  });
+users.openapi(createUserRoute, async (c) => {
+  const input = c.req.valid('json');
+  const user = await createUser(input, c.env.DATABASE_URL);
+  return c.json(user, 201);
+});
 
-export { userRoutes };
+users.openapi(
+  createRoute({
+    method: 'get',
+    path: '/{id}',
+    request: { params: GetUserParams },
+    middleware: [cache({ cacheName: 'user-cache', cacheControl: 'max-age=60' })],
+    responses: {
+      200: {
+        description: 'User',
+        content: { 'application/json': { schema: UserSchema } },
+      },
+      404: { description: 'User not found' },
+    },
+  }),
+  async (c) => {
+    const { id } = c.req.valid('param');
+    const user = await getUserById(id);
+    return user ? c.json(user) : c.json({ message: 'User not found' }, 404);
+  },
+);
+
+export const userRoutes = users;
 ```
+
+## Testing & Contract Coverage
+
+Exercise the Hono app directly in unit and integration tests so request/response behaviour stays verifiable across runtimes.
+
+```typescript
+// tests/users.spec.ts
+import { describe, expect, it } from 'vitest';
+import type { KVNamespace, Queue } from '@cloudflare/workers-types';
+
+import api from '../api';
+import type { Env } from '../api/runtime';
+
+const mockEnv: Env['Bindings'] = {
+  DATABASE_URL: 'http://127.0.0.1:9000',
+  AUTH_SECRET: 'test-secret',
+  QUEUE: { send: async () => undefined } as unknown as Queue,
+  ARTICLE_KV: { get: async () => null } as unknown as KVNamespace,
+  DATA_CACHE: { get: async () => null } as unknown as KVNamespace,
+  ADMIN_PASSWORD: 'insecure',
+  SENTRY_DSN: undefined,
+  RUNTIME_ENV: 'test',
+};
+
+describe('users', () => {
+  it('creates a user', async () => {
+    const res = await api.request(
+      'http://example.com/api/users',
+      {
+        method: 'POST',
+        headers: {
+          'content-type': 'application/json',
+          authorization: 'Bearer integration-test',
+        },
+        body: JSON.stringify({ email: 'demo@example.com', name: 'Demo', password: 'hunter2-hono' }),
+      },
+      mockEnv,
+    );
+
+    expect(res.status).toBe(201);
+    expect(await res.json()).toMatchObject({ email: 'demo@example.com' });
+  });
+});
+```
+
+- `app.request(input, init, env)` accepts path strings, Request objects, or URL strings and optionally a bindings object; pass deterministic mocks for Cloudflare resources.
+- Reach for `@hono/testing` helpers when you need streaming assertions, multipart parsing, or to emulate runtime-specific quirks in CI.
+- Snapshot the OpenAPI doc (`expect(await api.request('/api/docs').json()).toMatchSnapshot()`) to detect contract drift alongside schema updates.
+- Keep verification blocks or smoke tests aligned with your API contracts so schema changes fail fast before deployment.
+
+## Observability & Telemetry
+
+Register metrics and tracing middleware before routes so instrumentation captures every request.
+
+```typescript
+// api/index.ts (excerpt)
+import { prometheus } from '@hono/prometheus';
+import { otel } from '@hono/otel';
+
+const { registerMetrics, printMetrics } = prometheus();
+
+app.use('*', registerMetrics);
+app.use('*', otel({ serviceName: 'engineering-os-api' }));
+
+app.get('/metrics', printMetrics);
+```
+
+- Export metrics on `/metrics` and wire OpenTelemetry to your preferred exporter (Console/OTLP) in local development.
+- Register tracing once during bootstrap so downstream routers inherit span context (`contextStorage` keeps async locals intact).
+- Emit structured logs inside `app.onError` with the request ID stored on `c.var.requestId` for correlation across traces and metrics.
 
 ## oRPC Integration with Hono
 
@@ -104,18 +307,13 @@ oRPC integrates seamlessly with HonoJS through the fetch adapter, allowing you t
 
 ```typescript
 // api/index.ts
-import { Hono } from 'hono';
 import { RPCHandler } from '@orpc/server/fetch';
-import { cors } from 'hono/cors';
-import { logger } from 'hono/logger';
 import { appRouter } from './procedures/router';
 import { userRoutes } from './routes/users';
+import { apiFactory } from './factory';
 
-const app = new Hono();
-
-// Global middleware (shared between REST and RPC)
-app.use('*', cors());
-app.use('*', logger());
+// Cross-cutting middleware already registered via apiFactory.initApp
+const app = apiFactory.createApp();
 
 // Create oRPC handler
 const rpcHandler = new RPCHandler(appRouter);
@@ -125,9 +323,9 @@ app.use('/rpc/*', async (c, next) => {
   const { matched, response } = await rpcHandler.handle(c.req.raw, {
     prefix: '/rpc',
     context: {
-      user: c.get('user'), // Share context with REST routes
-      requestId: c.get('requestId'),
-    }
+      user: c.var.user,
+      requestId: c.var.requestId,
+    },
   });
 
   if (matched) {
@@ -197,6 +395,165 @@ app.use('/protected/*', authMiddleware); // REST routes
 app.use('/rpc/*', authMiddleware);       // RPC procedures will have access via context
 ```
 
+## Streaming & Realtime Patterns
+
+```typescript
+// Server-Sent Events (SSE) via hono/streaming
+import { streamSSE } from 'hono/streaming';
+
+app.get('/events', async (c) => {
+  return streamSSE(c, async (stream) => {
+    const cancel = new AbortController();
+    c.executionCtx.waitUntil(() => cancel.abort());
+
+    stream.writeSSE({ data: JSON.stringify({ type: 'connected' }) });
+
+    const sub = subscribeToTopic('notifications', (payload) =>
+      stream.writeSSE({ event: 'notification', data: JSON.stringify(payload) })
+    );
+
+    stream.onAbort(() => sub.unsubscribe());
+  });
+});
+
+// Streaming large responses chunk-by-chunk
+app.get('/reports/:id/export', (c) =>
+  c.stream(async (stream) => {
+    for await (const chunk of exportReport(c.req.param('id'))) {
+      await stream.write(chunk);
+    }
+  }, { status: 200, headers: { 'content-type': 'text/csv' } })
+);
+
+// WebSocket relay (Cloudflare / Bun adapters expose c.env for bindings)
+app.get('/ws', (c) =>
+  c.websocket((socket) => {
+    socket.onMessage((event) => broadcast(event.data));
+  })
+);
+```
+
+## Caching & Edge Storage
+
+```typescript
+import { cache } from 'hono/cache';
+
+// Leverage runtime HTTP cache (Cloudflare Workers example)
+app.use('/articles/*', cache({ cacheName: 'articles', cacheControl: 's-maxage=120' }));
+
+app.get('/articles/:slug', async (c) => {
+  const { slug } = c.req.param();
+  const article = await c.env.ARTICLE_KV.get(slug, 'json');
+  if (!article) {
+    return c.json({ message: 'Not found' }, 404, {
+      'cache-control': 'no-store',
+    });
+  }
+
+  // Warm background caches (Queue/KV) without blocking response
+  c.executionCtx.waitUntil(revalidateArticle(slug));
+  return c.json(article, 200, { 'cache-control': 'max-age=60, stale-while-revalidate=30' });
+});
+
+// Cache adapter for expensive RPC results
+import { createMiddleware } from 'hono/factory';
+const memoize = createMiddleware<Env>(async (c, next) => {
+  const cacheKey = `user:${c.req.raw.url}`;
+  const cached = await c.env.DATA_CACHE.get(cacheKey);
+  if (cached) return c.json(JSON.parse(cached));
+
+  await next();
+  if (c.res.ok) {
+    c.executionCtx.waitUntil(
+      c.env.DATA_CACHE.put(cacheKey, await c.res.clone().text(), { expirationTtl: 120 }),
+    );
+  }
+});
+
+app.route('/users', users.use(memoize));
+```
+
+## Security & Access Control
+
+```typescript
+import { secureHeaders } from 'hono/secure-headers';
+import { rateLimiter } from '@hono/rate-limiter';
+import { basicAuth } from 'hono/basic-auth';
+import { bearerAuth } from 'hono/bearer-auth';
+import { createMiddleware } from 'hono/factory';
+
+app.use('*', secureHeaders());
+
+// Apply rate limiting per IP
+app.use(
+  '/auth/*',
+  rateLimiter({
+    windowMs: 60_000,
+    limit: 30,
+    keyGenerator: (c) => c.req.header('cf-connecting-ip') ?? c.req.ip ?? 'anon',
+    onLimitReached: (c) => c.json({ message: 'Too many requests' }, 429),
+  }),
+);
+
+// Protect administrative endpoints
+const adminAuth = createMiddleware<Env>(async (c, next) =>
+  basicAuth({ username: 'admin', password: c.env.ADMIN_PASSWORD })(c, next),
+);
+app.use('/admin/*', adminAuth);
+
+// API key or JWT enforcement
+const serviceTokenAuth = createMiddleware<Env>((c, next) =>
+  bearerAuth({ token: c.env.AUTH_SECRET })(c, next),
+);
+app.use('/api/protected/*', serviceTokenAuth);
+
+// Multi-tenant guard ensures bound user is present
+app.use('/tenant/*', (c, next) => {
+  if (!c.var.user) return c.json({ message: 'Unauthorized' }, 401);
+  if (!c.var.user.tenantId) return c.json({ message: 'Tenant required' }, 403);
+  return next();
+});
+```
+
+## Observability & Error Reporting
+
+```typescript
+import { prometheus } from '@hono/prometheus';
+import { sentry } from '@hono/sentry';
+import { createMiddleware } from 'hono/factory';
+
+const metrics = prometheus({ options: { defaultMetricsEnabled: true } });
+app.use('*', metrics.middleware);
+app.get('/metrics', metrics.getMetrics());
+
+const sentryMiddleware = createMiddleware<Env>((c, next) =>
+  sentry({
+    dsn: c.env.SENTRY_DSN,
+    environment: c.env.RUNTIME_ENV,
+    release: process.env.COMMIT_SHA,
+  })(c, next),
+);
+app.use('*', sentryMiddleware);
+
+app.onError((err, c) => {
+  c.executionCtx.waitUntil(reportError(err, { requestId: c.var.requestId }));
+  return c.json({ message: 'Unexpected server error', requestId: c.var.requestId }, 500);
+});
+
+// Structured logging helper
+app.use('*', async (c, next) => {
+  const start = performance.now();
+  await next();
+  console.log(JSON.stringify({
+    requestId: c.var.requestId,
+    method: c.req.method,
+    path: c.req.path,
+    status: c.res.status,
+    durationMs: +(performance.now() - start).toFixed(2),
+  }));
+});
+```
+
 ### Context Sharing Pattern
 
 Share authenticated user and request context between REST and RPC:
@@ -205,8 +562,8 @@ Share authenticated user and request context between REST and RPC:
 // context/rpc-context.ts
 export async function createRPCContext(c: Context) {
   return {
-    user: c.get('user'),           // From auth middleware
-    requestId: c.get('requestId'), // From request ID middleware  
+    user: c.var.user,             // From auth middleware
+    requestId: c.var.requestId,   // From request ID middleware  
     userRepository: new UserRepository(),
     // ... other dependencies
   };
@@ -231,16 +588,16 @@ export const usersRouter = createRouter({
 import { createMiddleware } from 'hono/factory';
 import { verify } from 'hono/jwt';
 
-export const authMiddleware = createMiddleware(async (c, next) => {
-  const token = c.req.header('Authorization')?.replace('Bearer ', '');
+export const authMiddleware = createMiddleware<Env>(async (c, next) => {
+  const token = c.req.header('authorization')?.replace('Bearer ', '');
   
   if (!token) {
     return c.json({ error: 'Unauthorized' }, 401);
   }
   
   try {
-    const payload = await verify(token, process.env.JWT_SECRET!);
-    c.set('user', payload);
+    const payload = await verify(token, c.env.AUTH_SECRET);
+    c.set('user', payload as AppUser);
     await next();
   } catch {
     return c.json({ error: 'Invalid token' }, 401);
@@ -253,8 +610,8 @@ app.use('/protected/*', authMiddleware);
 
 ### Rate Limiting
 ```typescript
-// middleware/rateLimit.ts
-import { rateLimiter } from 'hono-rate-limiter';
+// middleware/rate-limit.ts
+import { rateLimiter } from '@hono/rate-limiter';
 
 export const apiRateLimit = rateLimiter({
   windowMs: 15 * 60 * 1000, // 15 minutes
@@ -271,6 +628,7 @@ app.use('/api/*', apiRateLimit);
 ```typescript
 // middleware/validation.ts
 import { z } from 'zod';
+import { zValidator } from '@hono/zod-validator';
 
 const paginationSchema = z.object({
   page: z.coerce.number().min(1).default(1),
@@ -1003,7 +1361,7 @@ describe('User Routes', () => {
       DESCRIPTION: "Ensures CORS is properly configured"
       DEPENDS_ON: ["hono_middleware_usage"]
     </test>
-    
+
     <test name="hono_testing_setup">
       TEST: "test -d packages/api/__tests__ && grep -r 'supertest\\|app\\.request' packages/api/__tests__/"
       REQUIRED: false

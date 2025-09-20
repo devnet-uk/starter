@@ -1,5 +1,14 @@
 # Vercel Deployment
 
+> Vercel backs our preview environments and emergency fallback only. Azure Container Apps remains the production/primary hosting target per `docs/standards/stack-specific/azure-container-apps.md`. Keep configuration aligned with the "Preview Hosting" entry in `docs/standards/tech-stack.md`.
+
+## When to Use Vercel
+- Generate preview URLs for feature branches and QA sign-off.
+- Spin up a temporary fallback if Azure Container Apps encounters a prolonged outage and the DR plan (`docs/runbooks/dr-failover.md`) calls for Vercel as an interim host.
+- Validate edge-specific behaviour (Edge Runtime, Edge Functions) before porting logic to Azure Front Door + ACA.
+
+Do **not** treat Vercel as the primary production platform. For long-lived incidents, follow the Azure failover runbook to restore service to ACA as soon as possible.
+
 ## Configuration
 
 ### vercel.json

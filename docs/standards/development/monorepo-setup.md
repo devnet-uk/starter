@@ -79,6 +79,8 @@ Create a `turbo.json` file in the root directory. This configuration defines the
 
 Create the initial directory structure and placeholder `package.json` files for applications and shared packages.
 
+> Version alignment: pull canonical package versions (Next.js, React, TypeScript, Expo, pnpm) from `docs/standards/tech-stack.md` before scaffolding. Update these snippets if the tech stack file changes.
+
 ### Step 1: Create Directories
 ```bash
 mkdir -p apps/web packages/ui packages/core packages/contracts
@@ -100,15 +102,15 @@ Create a `package.json` in each new directory.
     "lint": "next lint"
   },
   "dependencies": {
-    "next": "15.5.2",
+    "next": "15.5.3",
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "@workspace/ui": "workspace:*"
   },
   "devDependencies": {
-    "@types/node": "20.x",
+    "@types/node": "22.x",
     "@types/react": "19.x",
-    "typescript": "5.9.x"
+    "typescript": "5.9.2"
   }
 }
 ```
@@ -130,7 +132,7 @@ Create a `package.json` in each new directory.
   },
   "devDependencies": {
     "tsup": "latest",
-    "typescript": "5.9.x"
+    "typescript": "5.9.2"
   }
 }
 ```
@@ -215,7 +217,7 @@ Add a reference to any shared packages (e.g., `@workspace/ui`).
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "typescript": "5.9.x"
+    "typescript": "5.9.2"
   },
   "private": true
 }
@@ -402,7 +404,7 @@ Each app and package should have its own `tsconfig.json` that extends the base c
       REQUIRED: false
       BLOCKING: false
       ERROR: "packageManager field not set to pnpm in package.json. Consider declaring it for tooling consistency."
-      FIX_COMMAND: "Add '"packageManager": "pnpm@<version>"' to package.json (root)"
+      FIX_COMMAND: "Add '"packageManager": "pnpm@10.16.0"' to package.json (root)"
       DESCRIPTION: "Advisory: declare pnpm as the package manager to guide tooling"
       DEPENDS_ON: ["pnpm_workspace_config_exists"]
     </test>

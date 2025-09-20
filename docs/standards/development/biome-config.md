@@ -4,6 +4,8 @@
 
 This standard defines the exact BiomeJS configuration for all Engineering OS projects, with **zero tolerance for quality downgrades** in domain layers.
 
+Engineering OS teams must run the **latest stable Biome release** (or the published LTS tag when Biome designates one). Confirm the installed version before generating configs, and update this standard when a new stable/LTS release introduces material rule changes.
+
 > **Critical**: Domain layer packages MUST maintain the strictest BiomeJS settings. Any overrides weakening domain quality are prohibited.
 
 
@@ -11,10 +13,10 @@ This standard defines the exact BiomeJS configuration for all Engineering OS pro
 
 ### Standard BiomeJS Configuration
 
-**File: `biome.json`**
+**File: `biome.json`** (replace `{{BIOME_VERSION}}` with the installed Biome version)
 ```json
 {
-  "$schema": "https://biomejs.dev/schemas/1.8.3/schema.json",
+  "$schema": "https://biomejs.dev/schemas/{{BIOME_VERSION}}/schema.json",
   "organizeImports": {
     "enabled": true
   },
@@ -162,6 +164,8 @@ This standard defines the exact BiomeJS configuration for all Engineering OS pro
   }
 }
 ```
+
+> Replace `{{BIOME_VERSION}}` with the version string reported by `npx @biomejs/biome --version` (for example, `2.2.4`). Keeping schema and CLI versions aligned avoids false diagnostics during validation.
 
 ## Domain Layer Override Protection
 
@@ -337,11 +341,11 @@ Domain layer packages (core, entities, domain) MUST maintain highest quality:
       DEPENDS_ON: ["biome_config_exists"]
     </test>
     <test name="biome_check_passes">
-      TEST: npx biome check . --reporter=summary
+      TEST: npx @biomejs/biome check . --reporter=summary
       REQUIRED: true
       BLOCKING: true
       ERROR: "BiomeJS check failed. Fix all linting and formatting issues."
-      FIX_COMMAND: "Run 'npx biome check . --apply' to fix auto-fixable issues, then manually fix remaining issues"
+      FIX_COMMAND: "Run 'npx @biomejs/biome check . --apply' to fix auto-fixable issues, then manually fix remaining issues"
       DESCRIPTION: "Executes BiomeJS check to validate all code meets quality standards"
       DEPENDS_ON: ["biome_config_exists", "biome_linter_enabled", "biome_formatter_enabled"]
     </test>
@@ -370,7 +374,7 @@ Domain layer packages (core, entities, domain) MUST maintain highest quality:
 
 ### Required Package.json Scripts
 
-All packages MUST have these scripts (not echo statements):
+All packages MUST have these scripts (not echo statements). `ci` runs Biome's unified pipeline and is required for parity with Engineering OS governance checks:
 
 ```json
 {
@@ -378,7 +382,8 @@ All packages MUST have these scripts (not echo statements):
     "lint": "biome check .",
     "lint:fix": "biome check . --apply",
     "format": "biome format . --write",
-    "check": "biome check . --apply-unsafe"
+    "check": "biome check . --apply-unsafe",
+    "ci": "biome ci ."
   }
 }
 ```
@@ -392,7 +397,8 @@ The following are **NEVER ACCEPTABLE**:
   "scripts": {
     "lint": "echo 'BiomeJS linting - Phase 0 Step 3'",  // ❌ FAKE
     "format": "echo 'Formatting complete'",              // ❌ FAKE
-    "check": "true"                                      // ❌ FAKE
+    "check": "true",                                     // ❌ FAKE
+    "ci": "echo 'CI green'"                              // ❌ FAKE
   }
 }
 ```
@@ -481,8 +487,8 @@ The following are **NEVER ACCEPTABLE**:
 # Remove old tools
 npm uninstall eslint prettier @typescript-eslint/parser @typescript-eslint/eslint-plugin
 
-# Install BiomeJS
-npm install --save-dev @biomejs/biome
+# Install the latest stable Biome (use @lts if Biome publishes an LTS tag)
+npm install --save-dev @biomejs/biome@latest
 
 # Initialize configuration
 npx @biomejs/biome init

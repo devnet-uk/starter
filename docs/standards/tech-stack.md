@@ -15,6 +15,7 @@
 - **TypeScript**: 5.9.2 (strict mode enabled)
 - **React**: 19.1.1+
 - **React Native**: 0.81.4
+- **Expo (managed runtime)**: 54
 
 ### Database
 
@@ -105,6 +106,7 @@
   - **Push**: Azure Notification Hubs (for Firebase Cloud Messaging (FCM) & Apple Push Notification Service (APNS))
 - **Monitoring & Logging**: Azure Monitor & Log Analytics
 - **Secret Management**: Azure Key Vault
+- **Preview Hosting / Backup**: Vercel (feature previews, short-lived fallback only)
 
 ### AI Integration
 

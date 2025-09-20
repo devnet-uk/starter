@@ -1,5 +1,19 @@
 # Drizzle ORM Patterns
 
+> Follow the Drizzle ORM version documented in `docs/standards/tech-stack.md` (currently 0.44.5+). Update examples when the tech stack file changes.
+
+We keep this standard as the shared source of truth for Drizzle usage so product teams can reference a single, curated playbook. When the upstream Drizzle project adds new capabilities, refresh the guidance here rather than duplicating tips in individual repos.
+
+### Best Practices Checklist
+
+- Keep schema modules colocated under `src/db/schema/**`, export types via `typeof users.$inferSelect` or `InferSelectModel`, and centralise shared enums/constants.
+- Manage configuration with a checked-in `drizzle.config.ts` that calls `defineConfig`, and prefer per-environment overrides (`drizzle-dev.config.ts`, etc.) when needed.
+- Use the `relations` API (or the generated `relations.ts` produced by `drizzle-kit pull` with relations enabled) so `db.query.<table>` calls stay fully typed.
+- Run `pnpm drizzle-kit generate` for every schema change, gate pull requests with `pnpm drizzle-kit check`, and commit generated SQL to keep drift observable.
+- Scope tenant data via PostgreSQL schemas or Row-Level Security helpers; never mix tenant records in shared tables without RLS or tenant filters.
+- Use generated columns + functional indexes for full-text search, vector operations, and materialised views instead of ad-hoc SQL in services.
+- Wrap read-heavy paths with the Drizzle `Cache` interface (or Upstash Redis) and call `Cache.onMutate` from mutations for deterministic invalidation.
+
 ## Schema Definition
 
 ### Table Definitions
@@ -45,6 +59,10 @@ import { InferSelectModel, InferInsertModel } from 'drizzle-orm';
 export type User = InferSelectModel<typeof users>;
 export type NewUser = InferInsertModel<typeof users>;
 
+// Shorthand introduced in Drizzle 0.29+
+export type UserRow = typeof users.$inferSelect;
+export type NewUserRow = typeof users.$inferInsert;
+
 // Custom types with relations
 export type UserWithProfile = User & {
   profile: Profile | null;
@@ -53,7 +71,87 @@ export type UserWithProfile = User & {
 export type UserWithPosts = User & {
   posts: Post[];
 };
+
+### Custom Schemas & Shared Types
+```typescript
+// db/schema/multi-tenancy.ts
+import { pgSchema, uuid, text, timestamp } from 'drizzle-orm/pg-core';
+
+// Keep tenant-specific tables in a separate PostgreSQL schema
+export const tenantsSchema = pgSchema('tenants');
+
+export const tenantRoles = tenantsSchema.enum('tenant_role', ['owner', 'admin', 'member']);
+
+export const tenantMembers = tenantsSchema.table('members', {
+  id: uuid('id').defaultRandom().primaryKey(),
+  tenantId: uuid('tenant_id').notNull(),
+  userId: uuid('user_id').notNull(),
+  role: tenantRoles('role').default('member').notNull(),
+  joinedAt: timestamp('joined_at', { mode: 'date' }).defaultNow().notNull(),
+});
+
+// Expose typed helpers so application code never hard-codes schema-qualified names
+export type TenantMember = typeof tenantMembers.$inferSelect;
+export const tenantMembersTableName = tenantMembers[Symbol.for('drizzle:Name')];
 ```
+
+## Relations API Patterns
+
+```typescript
+import { relations } from 'drizzle-orm';
+
+export const usersRelations = relations(users, ({ one, many }) => ({
+  profile: one(profiles, {
+    fields: [users.id],
+    references: [profiles.userId],
+  }),
+  authoredPosts: many(posts, { relationName: 'author' }),
+  reviewedPosts: many(posts, { relationName: 'reviewer' }),
+}));
+
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  author: one(users, {
+    fields: [posts.authorId],
+    references: [users.id],
+    relationName: 'author',
+  }),
+  reviewer: one(users, {
+    fields: [posts.reviewerId],
+    references: [users.id],
+    relationName: 'reviewer',
+  }),
+  comments: many(comments),
+}));
+
+export const commentsRelations = relations(comments, ({ one }) => ({
+  post: one(posts, {
+    fields: [comments.postId],
+    references: [posts.id],
+  }),
+  author: one(users, {
+    fields: [comments.authorId],
+    references: [users.id],
+  }),
+}));
+
+// Query with eager loading
+const postsWithRelations = await db.query.posts.findMany({
+  where: eq(posts.published, true),
+  with: {
+    author: { columns: { id: true, name: true } },
+    reviewer: true,
+    comments: {
+      columns: { id: true, text: true },
+      orderBy: [desc(comments.createdAt)],
+    },
+  },
+});
+
+// Database-first workflow: drizzle-kit pull can emit relations based on FK metadata
+// pnpm drizzle-kit pull --out ./src/db/introspected --config=drizzle-dev.config.ts
+```
+
+> **Tip**: When multiple relations reference the same pair of tables, always set `relationName` so `db.query.*` typings stay unambiguous.
 
 ## Query Patterns
 
@@ -98,11 +196,11 @@ await db
 ### Advanced Queries
 
 ```typescript
-// DrizzleORM 0.44.4+ $onUpdate Features
+// DrizzleORM 0.44.5+ $onUpdate Features
 const usersWithUpdateTracking = pgTable('users', {
   id: uuid('id').defaultRandom().primaryKey(),
   name: varchar('name', { length: 100 }).notNull(),
-  // $onUpdateFn for SQL expressions (v0.44.4+)
+  // $onUpdateFn for SQL expressions (v0.44.5+)
   updateCounter: integer('update_counter').default(1)
     .$onUpdateFn(() => sql`update_counter + 1`),
   // $onUpdate for JavaScript functions
@@ -149,6 +247,53 @@ sqlChunks.push(sql`end)`);
 
 const finalSql: SQL = sql.join(sqlChunks, sql.raw(' '));
 await db.update(users).set({ status: finalSql }).where(inArray(users.id, ids));
+```
+
+### Vector & Full-Text Search
+
+```typescript
+import { eq, l2Distance, sql } from 'drizzle-orm';
+
+// items and users tables defined in ./schema
+
+const embeddingQuery = [0.12, 0.44, -0.81] satisfies number[];
+const searchTerm = 'growth & roadmap';
+const tsQuery = sql`websearch_to_tsquery('english', ${searchTerm})`;
+
+// Vector similarity search with pgvector
+const similarEmbeddings = await db
+  .select({
+    id: items.id,
+    distance: l2Distance(items.embedding, embeddingQuery).as('distance'),
+  })
+  .from(items)
+  .orderBy(l2Distance(items.embedding, embeddingQuery))
+  .limit(10);
+
+// Sub-query vector comparison
+const referenceId = 'item_1';
+
+const reference = db
+  .select({ embedding: items.embedding })
+  .from(items)
+  .where(eq(items.id, referenceId));
+
+const neighbours = await db
+  .select()
+  .from(items)
+  .orderBy(l2Distance(items.embedding, reference))
+  .limit(5);
+
+// Full-text search powered by generated tsvector column
+const rankedResults = await db
+  .select({
+    id: users.id,
+    score: sql`ts_rank(${users.searchVector}, ${tsQuery})`,
+  })
+  .from(users)
+  .where(sql`${users.searchVector} @@ ${tsQuery}`)
+  .orderBy(sql`ts_rank(${users.searchVector}, ${tsQuery}) DESC`)
+  .limit(20);
 ```
 
 ## Generated Columns
@@ -260,7 +405,7 @@ async function withTenantContext<T>(
 }
 ```
 
-## Live Queries (Expo SQLite)
+### Advanced Live Query Patterns (Expo SQLite)
 
 ```typescript
 // Setup for live queries
@@ -315,7 +460,7 @@ function useUserActivity(userId: string) {
 ## Migration Patterns
 
 ```typescript
-// drizzle.config.ts - Updated for v0.44.4+
+// drizzle.config.ts - Updated for v0.44.5+
 import { defineConfig } from "drizzle-kit";
 
 export default defineConfig({
@@ -355,11 +500,23 @@ export default defineConfig({
 // pnpm drizzle-kit migrate
 
 // Introspect existing database
-// pnpm drizzle-kit introspect
+// pnpm drizzle-kit pull
 
 // Studio for database visualization
 // pnpm drizzle-kit studio --port 3333
+
+// Validate schema drift in CI
+// pnpm drizzle-kit check --config=drizzle-dev.config.ts
+
+// Database-first workflow: emit schema + relations
+// pnpm drizzle-kit pull --out ./src/db/introspected
+
+// Support multiple environments with explicit configs
+// pnpm drizzle-kit migrate --config=drizzle-dev.config.ts
+// pnpm drizzle-kit migrate --config=drizzle-prod.config.ts
 ```
+
+> Run `pnpm drizzle-kit check` in CI to block drift and to keep generated relation metadata (`relations.ts`) aligned with production schemas.
 
 ## Error Handling
 
@@ -426,6 +583,9 @@ async function transferFunds(fromId: string, toId: string, amount: number) {
 // Caching with Upstash integration
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Redis } from '@upstash/redis';
+import Keyv from 'keyv';
+import { Cache } from 'drizzle-orm/cache';
+import { Table, getTableName, is } from 'drizzle-orm';
 
 const redis = new Redis({
   url: process.env.UPSTASH_REDIS_REST_URL!,
@@ -449,6 +609,46 @@ const db = drizzle(connection, {
     },
   },
 });
+
+// Advanced cache invalidation strategy using Drizzle's Cache interface
+class GlobalCache extends Cache {
+  private readonly store = new Keyv();
+  private readonly tableKeyMap = new Map<string, string[]>();
+  private readonly ttl = 1_000; // milliseconds
+
+  override strategy() {
+    return 'all';
+  }
+
+  override async get(key: string) {
+    const cached = await this.store.get(key);
+    return cached === undefined ? undefined : (cached as any[]);
+  }
+
+  override async put(key: string, response: any[], tables: string[]) {
+    await this.store.set(key, response, this.ttl);
+    for (const table of tables) {
+      const keys = this.tableKeyMap.get(table) ?? [];
+      keys.push(key);
+      this.tableKeyMap.set(table, keys);
+    }
+  }
+
+  override async onMutate({ tables, tags }: { tables: string[] | Table<any>[]; tags: string | string[] }) {
+    const tableList = Array.isArray(tables) ? tables : [tables];
+    for (const table of tableList) {
+      const tableName = is(table, Table) ? getTableName(table) : table;
+      const keys = this.tableKeyMap.get(tableName) ?? [];
+      await Promise.all(keys.map((key) => this.store.delete(key)));
+      this.tableKeyMap.delete(tableName);
+    }
+
+    const tagList = Array.isArray(tags) ? tags : [tags];
+    await Promise.all(tagList.filter(Boolean).map((tag) => this.store.delete(tag)));
+  }
+}
+
+const cachedDb = drizzle(connection, { caching: { provider: new GlobalCache() } });
 
 // Batch operations for performance
 async function bulkCreateUsers(users: NewUser[]) {
@@ -593,7 +793,7 @@ const activeUsers = await userRepo.getActiveUsers(20);
 ## Live Queries (Expo SQLite)
 
 ```typescript
-// DrizzleORM 0.44.4+ Live Queries with Expo SQLite
+// DrizzleORM 0.44.5+ Live Queries with Expo SQLite
 import { useLiveQuery, drizzle } from 'drizzle-orm/expo-sqlite';
 import { openDatabaseSync } from 'expo-sqlite/next';
 import { eq, desc } from 'drizzle-orm';
@@ -747,7 +947,7 @@ describe('Document RLS', () => {
       DESCRIPTION: "Ensures Drizzle Kit configuration file exists for migrations"
     </test>
     <test name="proper_schema_imports">
-      TEST: grep -r "from.*drizzle-orm/pg-core" packages/database --include="*.ts" | head -3
+      TEST: rg --max-count 1 "from .*drizzle-orm/pg-core" packages/database --glob "*.ts"
       REQUIRED: true
       ERROR: "Drizzle ORM imports not found. Import table and column definitions from 'drizzle-orm/pg-core'."
       DESCRIPTION: "Verifies proper Drizzle ORM imports in schema files"
@@ -765,40 +965,46 @@ describe('Document RLS', () => {
       DESCRIPTION: "Verifies migrations directory exists"
     </test>
     <test name="no_raw_sql_in_business_logic">
-      TEST: ! grep -r "sql\`" packages/core --include="*.ts" | grep -v "test"
+      TEST: "! rg 'sql`' packages/core --glob '*.ts' --glob '!**/__tests__/**' --glob '!**/*.test.ts'"
       REQUIRED: true
       ERROR: "Raw SQL found in core business logic. Use Drizzle query builder instead."
       DESCRIPTION: "Ensures business logic uses type-safe Drizzle queries, not raw SQL"
     </test>
     <test name="proper_table_naming">
-      TEST: grep -r "pgTable(" packages/database --include="*.ts" | grep -E "pgTable\('[a-z_]+'" | head -3
+      TEST: rg --max-count 3 "pgTable\('[a-z_]+'" packages/database --glob "*.ts"
       REQUIRED: false
       ERROR: "Consider using snake_case for database table names for consistency."
       DESCRIPTION: "Checks that table names follow snake_case convention"
     </test>
     <test name="primary_keys_defined">
-      TEST: grep -r "\.primaryKey()" packages/database --include="*.ts" | head -3
+      TEST: rg --max-count 3 "\\.primaryKey\(\)" packages/database --glob "*.ts"
       REQUIRED: true
       ERROR: "Tables should have primary keys defined. Add .primaryKey() to appropriate columns."
       DESCRIPTION: "Ensures all tables have primary keys defined"
     </test>
     <test name="proper_relations_usage">
-      TEST: grep -r "relations(" packages/database --include="*.ts" | head -3
+      TEST: rg --max-count 3 "relations\(" packages/database --glob "*.ts"
       REQUIRED: false
       ERROR: "Consider using Drizzle relations for better type safety and query building."
       DESCRIPTION: "Encourages use of Drizzle relations for table relationships"
     </test>
     <test name="environment_variable_usage">
-      TEST: grep -r "process\.env\.DATABASE_URL" packages/database --include="*.ts" | head -1
+      TEST: rg --max-count 1 "process\\.env\\.DATABASE_URL" packages/database --glob "*.ts"
       REQUIRED: true
       ERROR: "DATABASE_URL environment variable not used. Configure database connection properly."
       DESCRIPTION: "Ensures database connection uses environment variables"
     </test>
     <test name="type_inference_patterns">
-      TEST: grep -r "InferSelectModel\|InferInsertModel" packages/database --include="*.ts" | head -3
+      TEST: rg --max-count 3 "(InferSelectModel|InferInsertModel|\\$inferSelect)" packages/database --glob "*.ts"
       REQUIRED: false
       ERROR: "Consider using InferSelectModel and InferInsertModel for better TypeScript integration."
       DESCRIPTION: "Encourages use of Drizzle type inference utilities"
+    </test>
+    <test name="drizzle_kit_check_in_ci">
+      TEST: rg --max-count 1 "drizzle-kit check" package.json .github --glob "*.json" --glob "*.yml"
+      REQUIRED: false
+      ERROR: "Consider wiring 'drizzle-kit check' into scripts/CI to block unreviewed schema drift."
+      DESCRIPTION: "Encourages automated schema drift detection with drizzle-kit check"
     </test>
   </verification_definitions>
 </verification-block>

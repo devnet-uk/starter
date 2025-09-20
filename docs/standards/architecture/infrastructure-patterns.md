@@ -5,6 +5,8 @@ Infrastructure layer implementation patterns that properly separate framework co
 
 > **Critical Rule**: Infrastructure layer implements interfaces defined in the domain layer. Never let domain code depend on infrastructure implementations.
 
+> Align DrizzleORM, database drivers, and runtime versions with the entries in `docs/standards/tech-stack.md` when following these patterns.
+
 ## Repository Pattern Implementation
 
 ### Domain Interface (Pure Contract)
@@ -44,7 +46,7 @@ export class DrizzleOrderRepository implements IOrderRepository {
         // Convert domain entity to database format
         const orderData = this.toDatabaseFormat(order);
         
-        // Upsert order with DrizzleORM 0.44.4+
+        // Upsert order with DrizzleORM 0.44.5+
         await tx.insert(orders)
           .values(orderData)
           .onConflictDoUpdate({
@@ -241,7 +243,7 @@ export const orders = pgTable('orders', {
   status: text('status', { enum: ['pending', 'confirmed', 'shipped', 'delivered'] })
     .notNull().default('pending'),
   
-  // DrizzleORM 0.44.4+ automatic timestamps
+  // DrizzleORM 0.44.5+ automatic timestamps
   createdAt: timestamp('created_at', { mode: 'date', precision: 3 })
     .notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 })

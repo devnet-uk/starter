@@ -2,6 +2,6 @@
 
 Start here: `docs/standards/standards.md` → `stack-specific/stack-specific.md` (dispatcher) → common standards.
 
-Technology stack specific patterns and best practices for the current stack (e.g., Drizzle, Hono, Next Safe Action, TanStack Query, Vercel AI, Vercel deployment, Zustand).
+Technology stack specific patterns and best practices for the current stack (e.g., Azure Container Apps production hosting, Drizzle, Hono, Next Safe Action, TanStack Query, Vercel AI, Vercel preview deployment, Zustand).
 
 Use the category dispatcher at `docs/standards/stack-specific/stack-specific.md` to route to specific standards. Dispatchers are routing-only.

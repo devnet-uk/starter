@@ -2,6 +2,8 @@
 
 ## Test Pyramid
 
+> Tooling versions (Vitest, pnpm, Node.js, Playwright, etc.) must match the canonical values in `docs/standards/tech-stack.md`. Update this standard when the tech stack file changes.
+
 ### Unit Tests (70%)
 
 <conditional-block task-condition="unit|unit-test" context-check="unit-testing-patterns">
@@ -990,12 +992,12 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: '10.16.0'
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install dependencies

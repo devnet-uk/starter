@@ -11,6 +11,8 @@ Routing: This standard is reached via:
 
 oRPC is a modern, type-safe RPC framework that provides end-to-end type safety with first-class OpenAPI support. It integrates seamlessly with our existing HonoJS infrastructure while offering enhanced type inference and reduced boilerplate compared to traditional REST APIs.
 
+We keep this standard as a living reference so every team can reuse the same contract-first patterns, even though Engineering OS itself does not ship product features. When the upstream project evolves, refresh the guidance here instead of scattering one-off tips in implementation repos.
+
 ### When to Use oRPC
 
 **Use oRPC for:**
@@ -31,66 +33,64 @@ oRPC is a modern, type-safe RPC framework that provides end-to-end type safety w
 ### Feature-Based Structure
 ```typescript
 // packages/api/procedures/users/router.ts
-import { os } from '@orpc/server'
-import { z } from 'zod'
-import { CreateUserSchema, GetUserSchema, UpdateUserSchema } from '@workspace/contracts'
+import { implement } from '@orpc/server'
+import { appContract } from '@workspace/contracts/rpc/app.contract'
 
-export const usersRouter = {
-  // Query procedures
-  getById: os
-    .input(z.object({ id: z.string().uuid() }))
-    .output(GetUserSchema)
-    .handler(async ({ input, context }) => {
-      return await context.userRepository.findById(input.id)
-    }),
+const os = implement(appContract)
 
-  list: os
-    .input(z.object({ 
-      page: z.number().min(1).default(1),
-      limit: z.number().min(1).max(100).default(20)
-    }))
-    .output(z.array(GetUserSchema))
-    .handler(async ({ input, context }) => {
-      return await context.userRepository.findPaginated(input)
-    }),
+export const getById = os.users.getById
+  .handler(async ({ input, context }) => {
+    return await context.userRepository.findById(input.id)
+  })
 
-  // Mutation procedures  
-  create: os
-    .input(CreateUserSchema)
-    .output(GetUserSchema)
-    .handler(async ({ input, context }) => {
-      return await context.createUserUseCase.execute(input)
-    }),
+export const list = os.users.list
+  .handler(async ({ input, context }) => {
+    const result = await context.userRepository.findPaginated(input)
+    return {
+      items: result.items,
+      nextCursor: result.nextCursor,
+    }
+  })
 
-  update: os
-    .input(UpdateUserSchema.extend({ id: z.string().uuid() }))
-    .output(GetUserSchema)
-    .handler(async ({ input, context }) => {
-      const { id, ...data } = input
-      return await context.updateUserUseCase.execute(id, data)
-    }),
+export const create = os.users.create
+  .handler(async ({ input, context }) => {
+    return await context.createUserUseCase.execute(input)
+  })
 
-  // Streaming procedure (event iterator)
-  watchUser: os
-    .input(z.object({ id: z.string().uuid() }))
-    .handler(async ({ input, context }) => {
-      return context.userEventStream.watchUser(input.id)
-    }),
-}
+export const update = os.users.update
+  .handler(async ({ input, context }) => {
+    const { id, ...data } = input
+    return await context.updateUserUseCase.execute(id, data)
+  })
+
+export const watchUser = os.users.watchUser
+  .handler(async ({ input, context }) => {
+    return context.userEventStream.watchUser(input.id)
+  })
 ```
 
 ### Main Router Assembly
 ```typescript
 // packages/api/procedures/router.ts
-import { usersRouter } from './users/router'
-import { authRouter } from './auth/router'
-import { postsRouter } from './posts/router'
+import { implement } from '@orpc/server'
+import { appContract } from '@workspace/contracts/rpc/app.contract'
+import * as users from './users/router'
+import * as auth from './auth/router'
+import * as posts from './posts/router'
 
-export const appRouter = {
-  users: usersRouter,
-  auth: authRouter,
-  posts: postsRouter,
-}
+const os = implement(appContract)
+
+export const appRouter = os.router({
+  users: {
+    getById: users.getById,
+    list: users.list,
+    create: users.create,
+    update: users.update,
+    watchUser: users.watchUser,
+  },
+  auth: auth.router,
+  posts: posts.router,
+})
 
 export type AppRouter = typeof appRouter
 ```
@@ -196,33 +196,47 @@ export type CreateUser = z.infer<typeof CreateUserSchema>
 export type UpdateUser = z.infer<typeof UpdateUserSchema>
 ```
 
-### RPC Router Contract Definition
+### RPC Router Contract Definition (recommended)
 ```typescript
-// packages/contracts/rpc/routers/users.ts
+// packages/contracts/rpc/users.contract.ts
+import { oc } from '@orpc/contract'
 import { z } from 'zod'
-import { UserSchema, CreateUserSchema, UpdateUserSchema } from '../../schemas/user'
+import { UserSchema, CreateUserSchema, UpdateUserSchema } from '../schemas/user'
 
-export const usersRouterContract = {
-  getById: {
-    input: z.object({ id: z.string().uuid() }),
-    output: UserSchema,
-    method: 'query' as const,
-  },
-  
-  create: {
-    input: CreateUserSchema,
-    output: UserSchema,
-    method: 'mutation' as const,
-  },
-  
-  watchUser: {
-    input: z.object({ id: z.string().uuid() }),
-    output: UserSchema,
-    method: 'subscription' as const,
-  },
+export const usersContract = {
+  getById: oc
+    .input(z.object({ id: z.string().uuid() }))
+    .output(UserSchema),
+
+  list: oc
+    .input(z.object({
+      page: z.number().min(1).default(1),
+      limit: z.number().min(1).max(100).default(20),
+    }))
+    .output(z.object({
+      items: z.array(UserSchema),
+      nextCursor: z.string().uuid().optional(),
+    })),
+
+  create: oc
+    .input(CreateUserSchema)
+    .output(UserSchema),
+
+  update: oc
+    .input(UpdateUserSchema.extend({ id: z.string().uuid() }))
+    .output(UserSchema),
+
+  watchUser: oc
+    .input(z.object({ id: z.string().uuid() }))
+    .output(z.any()), // Replace with DurableEventIterator output when streaming is implemented
 } as const
 
-export type UsersRouterContract = typeof usersRouterContract
+export const appContract = {
+  users: usersContract,
+} as const
+
+export type UsersContract = typeof usersContract
+export type AppContract = typeof appContract
 ```
 
 ### Client Type Generation
@@ -250,43 +264,87 @@ export { type AppRouter }
 ### TanStack Query Integration
 ```typescript
 // apps/web/src/shared/api/rpc-client.ts
-import { createORPCClient } from '@orpc/client'
 import { RPCLink } from '@orpc/client/fetch'
+import { createORPCClient } from '@orpc/client'
+import { createTanstackQueryUtils } from '@orpc/tanstack-query'
 import type { AppRouter } from '@workspace/contracts/rpc/clients'
 
-const rpcLink = new RPCLink({
+const link = new RPCLink({
   url: '/rpc',
   headers: () => ({
-    'Authorization': `Bearer ${getAuthToken()}`,
+    Authorization: `Bearer ${getAuthToken()}`,
   }),
 })
 
-export const rpcClient = createORPCClient<AppRouter>(rpcLink)
+const client = createORPCClient<AppRouter>(link)
+export const orpc = createTanstackQueryUtils(client)
 
-// TanStack Query integration
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useSuspenseQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 export function useUser(id: string) {
-  return useQuery({
-    queryKey: ['rpc', 'users', 'getById', { id }],
-    queryFn: () => rpcClient.users.getById({ id }),
-    enabled: !!id,
-  })
+  return useSuspenseQuery(
+    orpc.users.getById.queryOptions({
+      input: { id },
+      enabled: !!id,
+    }),
+  )
 }
 
 export function useCreateUser() {
   const queryClient = useQueryClient()
-  
-  return useMutation({
-    mutationFn: (data: CreateUser) => rpcClient.users.create(data),
-    onSuccess: (user) => {
-      // Invalidate users list
-      queryClient.invalidateQueries({ queryKey: ['rpc', 'users'] })
-      // Set individual user cache
-      queryClient.setQueryData(['rpc', 'users', 'getById', { id: user.id }], user)
-    },
-  })
+
+  return useMutation(
+    orpc.users.create.mutationOptions({
+      onSuccess: (user) => {
+        queryClient.invalidateQueries({ queryKey: orpc.users.key() })
+        queryClient.setQueryData(orpc.users.getById.key({ input: { id: user.id } }), user)
+      },
+    }),
+  )
 }
+```
+
+### Next.js SSR Instrumentation
+```typescript
+// apps/web/src/instrumentation.ts
+import type { RouterClient } from '@orpc/server'
+import { createORPCClient } from '@orpc/client'
+import { RPCLink } from '@orpc/client/fetch'
+import type { AppRouter } from '@workspace/contracts/rpc/clients'
+
+declare global {
+  // Share the server-side client across requests during SSR
+  // eslint-disable-next-line no-var
+  var $client: RouterClient<AppRouter> | undefined
+}
+
+export async function register() {
+  globalThis.$client = createORPCClient<AppRouter>(
+    new RPCLink({
+      url: process.env.NEXT_PUBLIC_ORIGIN ? `${process.env.NEXT_PUBLIC_ORIGIN}/rpc` : '/rpc',
+      fetch: (input, init) => fetch(input, { ...init, cache: 'no-store' }),
+    }),
+  )
+}
+
+// apps/web/src/lib/orpc.client.ts
+import type { RouterClient } from '@orpc/server'
+import { createORPCClient } from '@orpc/client'
+import { RPCLink } from '@orpc/client/fetch'
+import type { AppRouter } from '@workspace/contracts/rpc/clients'
+
+const browserLink = new RPCLink({
+  url: () => {
+    if (typeof window === 'undefined') {
+      throw new Error('RPCLink is not allowed on the server side.')
+    }
+
+    return `${window.location.origin}/rpc`
+  },
+})
+
+export const client: RouterClient<AppRouter> =
+  globalThis.$client ?? createORPCClient<AppRouter>(browserLink)
 ```
 
 ### Subscription Patterns (Event Iterator)
@@ -369,55 +427,65 @@ export type RPCError = z.infer<typeof RPCErrorSchema>
 ### Error Middleware
 ```typescript
 // packages/api/middleware/error-handler.ts
-import { os } from '@orpc/server'
+import { ORPCError, os } from '@orpc/server'
+import { z } from 'zod'
 
-export const errorHandler = os.middleware(async ({ next }) => {
+const errorBase = os.errors({
+  VALIDATION_ERROR: {
+    data: z.object({ fieldErrors: z.record(z.string(), z.array(z.string())).optional() }),
+  },
+  NOT_FOUND: {},
+  INTERNAL_ERROR: {},
+})
+
+export const errorHandler = errorBase.middleware(async ({ next, errors }) => {
   try {
     return await next()
   } catch (error) {
     if (error instanceof ValidationError) {
-      throw {
-        code: 'VALIDATION_ERROR',
+      throw errors.VALIDATION_ERROR({
         message: error.message,
-        details: error.fieldErrors,
-      }
+        data: { fieldErrors: error.fieldErrors },
+      })
     }
-    
+
     if (error instanceof NotFoundError) {
-      throw {
-        code: 'NOT_FOUND', 
+      throw errors.NOT_FOUND({
         message: error.message,
-      }
+      })
     }
-    
-    // Log internal errors but don't expose details
+
     console.error('RPC Internal Error:', error)
-    throw {
-      code: 'INTERNAL_ERROR',
+    throw new ORPCError('INTERNAL_ERROR', {
       message: 'An internal server error occurred',
-    }
+    })
   }
 })
 ```
 
 ### Frontend Error Handling
 ```typescript
-// Error boundary for RPC errors
-export function handleRPCError(error: unknown) {
-  if (isRPCError(error)) {
-    switch (error.code) {
-      case 'VALIDATION_ERROR':
-        return handleValidationError(error)
-      case 'NOT_FOUND':
-        return handleNotFoundError(error)
-      case 'UNAUTHORIZED':
-        return redirectToLogin()
-      default:
-        return showGenericError()
+import { createSafeClient, isDefinedError } from '@orpc/client'
+import { client } from './rpc-client'
+
+const safeClient = createSafeClient(client)
+
+export async function submitUser(input: CreateUser) {
+  const { error, data } = await safeClient.users.create(input)
+
+  if (error) {
+    if (isDefinedError(error) && error.code === 'VALIDATION_ERROR') {
+      return handleValidationError(error.data?.fieldErrors)
     }
+
+    if (isDefinedError(error) && error.code === 'NOT_FOUND') {
+      return handleNotFoundError()
+    }
+
+    return showGenericError()
   }
-  
-  return showGenericError()
+
+  return data
 }
 ```
 
@@ -537,89 +605,97 @@ export const usersRouter = {
 ```typescript
 // packages/api/__tests__/procedures/users.test.ts
 import { describe, test, expect, beforeEach } from 'vitest'
-import { createTRPCMsw } from 'msw-trpc'
-import { usersRouter } from '../procedures/users/router'
+import { call } from '@orpc/server'
+import { getById, create } from '../procedures/users/router'
 import { createMockContext } from '../__mocks__/context'
 
 describe('Users RPC Router', () => {
   let mockContext: ReturnType<typeof createMockContext>
-  
+
   beforeEach(() => {
     mockContext = createMockContext()
   })
-  
+
   test('getById returns user when found', async () => {
     const mockUser = { id: '1', name: 'Test User', email: 'test@example.com' }
     mockContext.userRepository.findById.mockResolvedValue(mockUser)
-    
-    const result = await usersRouter.getById({
+
+    const result = await call(getById, {
       input: { id: '1' },
-      ctx: mockContext,
+      context: mockContext,
     })
-    
+
     expect(result).toEqual(mockUser)
     expect(mockContext.userRepository.findById).toHaveBeenCalledWith('1')
   })
-  
+
   test('create validates input and calls use case', async () => {
     const input = { name: 'New User', email: 'new@example.com' }
     const createdUser = { id: '2', ...input }
-    
+
     mockContext.createUserUseCase.execute.mockResolvedValue(createdUser)
-    
-    const result = await usersRouter.create({
+
+    const result = await call(create, {
       input,
-      ctx: mockContext,
+      context: mockContext,
     })
-    
+
     expect(result).toEqual(createdUser)
     expect(mockContext.createUserUseCase.execute).toHaveBeenCalledWith(input)
   })
 })
 ```
 
-### Integration Testing with MSW
+### Integration Testing with RPCHandler
 ```typescript
 // packages/api/__tests__/integration/rpc.test.ts
-import { setupServer } from 'msw/node'
-import { createTRPCMsw } from 'msw-trpc'
+import { RPCHandler } from '@orpc/server/fetch'
+import { createORPCClient } from '@orpc/client'
+import { RPCLink } from '@orpc/client/fetch'
 import { appRouter } from '../procedures/router'
-import { createClient } from '@orpc/client/fetch'
+import { createContext } from '../context'
 
-const server = setupServer()
+const handler = new RPCHandler(appRouter, {
+  createContext: async (request) => createContext({ request }),
+})
 
-beforeAll(() => server.listen())
-afterEach(() => server.resetHandlers())
-afterAll(() => server.close())
+function createTestClient() {
+  return createORPCClient<typeof appRouter>(
+    new RPCLink({
+      url: 'http://test/rpc',
+      fetch: async (input, init) => {
+        const request = new Request(typeof input === 'string' ? input : input.url, init)
+        const { matched, response } = await handler.handle(request, { prefix: '/rpc' })
 
-test('full RPC flow with mocked dependencies', async () => {
-  const trpcMsw = createTRPCMsw(appRouter)
-  
-  server.use(
-    trpcMsw.users.getById.query(() => ({
-      id: '1',
-      name: 'Test User',
-      email: 'test@example.com',
-    }))
+        if (!matched) {
+          throw new Error('Request did not match RPC handler')
+        }
+
+        return response
+      },
+    }),
   )
-  
-  const link = new RPCLink({ url: '/rpc' })
-  const client = createORPCClient<typeof appRouter>(link)
+}
+
+test('full RPC flow with real handler', async () => {
+  const client = createTestClient()
   const user = await client.users.getById({ id: '1' })
-  
-  expect(user.name).toBe('Test User')
+
+  expect(user).toMatchObject({ id: '1' })
 })
 ```
 
 ### Contract Testing
 ```typescript
 // Ensure client and server contracts match
+import { appContract } from '@workspace/contracts/rpc/app.contract'
+import { appRouter } from '../procedures/router'
+
 test('client contract matches server implementation', () => {
-  const clientContract = usersRouterContract
-  const serverProcedures = Object.keys(usersRouter)
-  const clientProcedures = Object.keys(clientContract)
-  
-  expect(serverProcedures.sort()).toEqual(clientProcedures.sort())
+  const implementedProcedures = Object.keys(appRouter.users)
+  const contractProcedures = Object.keys(appContract.users)
+
+  expect(implementedProcedures.sort()).toEqual(contractProcedures.sort())
 })
 ```
 
@@ -721,34 +797,24 @@ IF task involves RPC monitoring or observability:
 
 ### OpenTelemetry Integration
 ```typescript
-// packages/api/middleware/telemetry.ts
-import { os } from '@orpc/server'
-import { trace, SpanStatusCode } from '@opentelemetry/api'
+// packages/api/handler.ts
+import { RPCHandler } from '@orpc/server/fetch'
+import { withOtel } from '@orpc/otel'
+import { appRouter } from './procedures/router'
 
-export const telemetryMiddleware = os.middleware(async ({ context, next }) => {
-  const tracer = trace.getTracer('orpc-server')
-
-  return tracer.startActiveSpan(`rpc.${context.procedure}`, async (span) => {
-    span.setAttributes({
-      'rpc.procedure': context.procedure,
-      'rpc.user_id': context.user?.id,
-      'rpc.tenant_id': context.tenantId,
-    })
-
-    try {
-      const result = await next()
-      span.setStatus({ code: SpanStatusCode.OK })
-      return result
-    } catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error)
-      span.setStatus({ code: SpanStatusCode.ERROR, message })
-      span.recordException(error as Error)
-      throw error
-    } finally {
-      span.end()
-    }
-  })
+export const rpcHandler = new RPCHandler(appRouter, {
+  plugins: [withOtel()],
 })
+
+// packages/observability/tracing.ts
+import { NodeSDK } from '@opentelemetry/sdk-node'
+import { ORPCInstrumentation } from '@orpc/otel'
+
+export const sdk = new NodeSDK({
+  instrumentations: [new ORPCInstrumentation()],
+})
+
+void sdk.start()
 ```
 
 ### Custom Metrics
@@ -790,15 +856,15 @@ export const metricsMiddleware = os.middleware(async ({ context, next }) => {
 <verification-block context-check="verification-orpc-setup">
   <verification_definitions>
     <test name="orpc_packages_installed">
-      TEST: "grep -q '@orpc/server' package.json && grep -q '@orpc/client' package.json"
+      TEST: "rg -q '@orpc/server' package.json && rg -q '@orpc/client' package.json && rg -q '@orpc/contract' package.json"
       REQUIRED: true
-      ERROR: "oRPC packages not installed. Run: pnpm add @orpc/server @orpc/client @orpc/openapi"
-      FIX_COMMAND: "pnpm add @orpc/server @orpc/client @orpc/openapi"
-      DESCRIPTION: "Verifies oRPC core packages are installed"
+      ERROR: "oRPC packages not installed. Run: pnpm add @orpc/server @orpc/client @orpc/openapi @orpc/contract"
+      FIX_COMMAND: "pnpm add @orpc/server @orpc/client @orpc/openapi @orpc/contract"
+      DESCRIPTION: "Verifies oRPC core + contract packages are installed"
     </test>
     
     <test name="orpc_hono_adapter_configured">
-      TEST: "grep -q 'RPCHandler.*Hono\\|@orpc/server/fetch' packages/api/"
+      TEST: "rg -q '@orpc/server/fetch' packages/api"
       REQUIRED: false
       ERROR: "oRPC Hono adapter not configured in packages/api"
       FIX_COMMAND: "Add RPCHandler import and setup in packages/api/index.ts"
@@ -815,7 +881,7 @@ export const metricsMiddleware = os.middleware(async ({ context, next }) => {
     </test>
     
     <test name="orpc_contracts_integration">
-      TEST: "grep -r 'RouterClient\\|RPCClient\\|AppRouter' packages/contracts/"
+      TEST: "rg -q '@orpc/contract' packages/contracts"
       REQUIRED: false
       ERROR: "oRPC client types not exported from contracts"
       DESCRIPTION: "Verifies type-safe client exports"
@@ -823,7 +889,7 @@ export const metricsMiddleware = os.middleware(async ({ context, next }) => {
     </test>
     
     <test name="orpc_openapi_generation">
-      TEST: "grep -q '@orpc/openapi' package.json && (test -f packages/api/openapi-from-orpc.json || rg -n 'OpenAPIGenerator|generateOpenAPIDocument' packages/api/ >/dev/null)"
+      TEST: "rg -q '@orpc/openapi' package.json && (test -f packages/api/openapi-from-orpc.json || rg -n 'OpenAPIGenerator|withOpenAPI' packages/api/ >/dev/null)"
       REQUIRED: false
       ERROR: "oRPC OpenAPI generation not configured"
       FIX_COMMAND: "Add OpenAPI generation using @orpc/openapi in packages/api"
@@ -832,7 +898,7 @@ export const metricsMiddleware = os.middleware(async ({ context, next }) => {
     </test>
     
     <test name="orpc_testing_setup">
-      TEST: "grep -q 'describe.*procedure\\|test.*RPC\\|createTRPCMsw' packages/api/__tests__/ || test -f packages/api/__tests__/procedures/"
+      TEST: "rg -q 'from \'@orpc/server\'.*call' packages/api/__tests__ || rg -q 'RPCHandler' packages/api/__tests__ || test -f packages/api/__tests__/procedures/"
       REQUIRED: false
       ERROR: "No RPC procedure tests found"
       FIX_COMMAND: "Create test files for RPC procedures in packages/api/__tests__/procedures/"
