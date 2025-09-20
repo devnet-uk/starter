@@ -25,6 +25,30 @@ IF current task involves Next Safe Action:
   </context_fetcher_strategy>
 </conditional-block>
 
+<conditional-block task-condition="nextjs|next.js|app-router|rsc|react-server-component|partial-prerendering|ppr|segment.config" context-check="nextjs-frontend">
+IF current task involves Next.js frontend patterns:
+  <context_fetcher_strategy>
+    USE: @agent:context-fetcher
+    REQUEST: "Get Next.js frontend patterns from stack-specific/nextjs-frontend.md"
+  </context_fetcher_strategy>
+</conditional-block>
+
+<conditional-block task-condition="azure|aca|container-apps|front-door|key-vault|log-analytics|azure-monitor|azd|azure-dev-cli" context-check="azure-container-apps">
+IF current task involves Azure Container Apps deployment:
+  <context_fetcher_strategy>
+    USE: @agent:context-fetcher
+    REQUEST: "Get Azure Container Apps guidance from stack-specific/azure-container-apps.md"
+  </context_fetcher_strategy>
+</conditional-block>
+
+<conditional-block task-condition="expo|react-native|mobile|ios|android|maestro|eas|nativewind" context-check="expo-react-native">
+IF current task involves the Expo React Native app:
+  <context_fetcher_strategy>
+    USE: @agent:context-fetcher
+    REQUEST: "Get Expo React Native patterns from stack-specific/expo-react-native.md"
+  </context_fetcher_strategy>
+</conditional-block>
+
 <conditional-block task-condition="tanstack|query|react-query|cache|mutation|optimistic" context-check="tanstack-query-dispatcher">
 IF current task involves TanStack Query:
   <context_fetcher_strategy>

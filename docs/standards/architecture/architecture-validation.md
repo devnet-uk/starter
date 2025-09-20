@@ -5,6 +5,8 @@ Automated tools and techniques for validating Clean Architecture compliance, det
 
 > **Critical**: Architecture rules are enforced through automated verification, not just documentation. These tools prevent architectural drift and ensure long-term maintainability.
 
+> Use the versions documented in `docs/standards/tech-stack.md` for Node.js, pnpm, and supporting tooling when wiring the workflows below.
+
 ## Automated Architecture Testing
 
 ### ArchUnit-Style Tests for TypeScript
@@ -602,7 +604,7 @@ jobs:
     - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: '20'
+        node-version: '22'
         cache: 'npm'
     
     - name: Install dependencies

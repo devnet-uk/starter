@@ -2,6 +2,8 @@
 
 ## GitHub Actions Workflow
 
+> Align tool versions with `docs/standards/tech-stack.md` (Node.js 22 LTS, pnpm 10.16.0, Biome latest stable). Update this workflow when the tech stack file changes.
+
 ### Main Pipeline
 ```yaml
 # .github/workflows/main.yml
@@ -26,18 +28,18 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: '10.16.0'
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
       
-      - name: Run linting with BiomeJS 2.2.2+
+      - name: Run linting with BiomeJS (latest stable, see tech-stack.md)
         run: pnpm lint
       
       - name: Check formatting with BiomeJS
@@ -52,10 +54,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: '10.16.0'
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install dependencies
@@ -84,10 +86,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: '10.16.0'
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install dependencies
@@ -112,10 +114,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: '10.16.0'
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install dependencies
@@ -163,10 +165,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: '10.16.0'
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install dependencies
@@ -192,10 +194,10 @@ jobs:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: '10.16.0'
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install dependencies
@@ -290,12 +292,12 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: '10.16.0'
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install dependencies

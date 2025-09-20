@@ -1,5 +1,7 @@
 # Vercel AI SDK Patterns
 
+> Align with the Vercel AI SDK version documented in `docs/standards/tech-stack.md` (currently 5.0.44+).
+
 ## Basic Setup
 
 ### AI Provider Configuration

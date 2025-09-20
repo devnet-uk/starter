@@ -2,6 +2,8 @@
 
 ## Core Quality Metrics
 
+> Pipelines and tooling referenced in this standard (Node.js, pnpm, analysis utilities) must use the versions recorded in `docs/standards/tech-stack.md`.
+
 <conditional-block task-condition="metrics|quality-tracking|dashboard" context-check="core-quality-metrics">
 IF task involves quality metrics or tracking:
   <context_fetcher_strategy>
@@ -632,12 +634,12 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: '10.16.0'
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'pnpm'
       
       - name: Install dependencies

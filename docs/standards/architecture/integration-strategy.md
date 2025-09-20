@@ -4,6 +4,8 @@
 
 This document defines how our **Feature-Sliced Design (FSD)** frontend applications integrate with **Clean Architecture** backend services through a **contract-driven development** approach. The `packages/contracts` package serves as the type-safe bridge ensuring end-to-end type safety from database to UI.
 
+> Version alignment: use the toolchain versions defined in `docs/standards/tech-stack.md` (Next.js, DrizzleORM 0.44.5+, HonoJS, TypeScript, etc.) when applying these patterns.
+
 ## Architecture Bridge
 
 ```
@@ -602,7 +604,7 @@ const route = createRoute({
 })
 ```
 
-### Database Integration (DrizzleORM 0.44.4+ + PostgreSQL 17.6)
+### Database Integration (DrizzleORM 0.44.5+ + PostgreSQL 17.6)
 
 ```typescript
 // packages/infrastructure/database/schema.ts
@@ -617,7 +619,7 @@ export const users = pgTable('users', {
   department: varchar('department', { length: 100 }),
   emailVerified: boolean('email_verified').default(false).notNull(),
   
-  // DrizzleORM 0.44.4+ $onUpdate features
+  // DrizzleORM 0.44.5+ $onUpdate features
   createdAt: timestamp('created_at', { mode: 'date', precision: 3 }).defaultNow().notNull(),
   updatedAt: timestamp('updated_at', { mode: 'date', precision: 3 })
     .$onUpdate(() => new Date()),
@@ -648,7 +650,7 @@ import { eq, and, isNull, sql } from 'drizzle-orm'
 export class UserRepository {
   async create(data: CreateUserRequest): Promise<CreateUserResponse> {
     try {
-      // DrizzleORM 0.44.4+ with enhanced error handling
+      // DrizzleORM 0.44.5+ with enhanced error handling
       const [user] = await db
         .insert(users)
         .values({
@@ -749,7 +751,7 @@ export class UserRepository {
   }
 }
 
-// Live queries for real-time updates (DrizzleORM 0.44.4+)
+// Live queries for real-time updates (DrizzleORM 0.44.5+)
 // packages/infrastructure/live-queries/user-live-queries.ts
 import { useLiveQuery } from 'drizzle-orm/live'
 import { db } from '../database'

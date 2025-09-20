@@ -14,42 +14,43 @@ npm install next-safe-action zod
 ### Basic Client Configuration
 ```typescript
 // lib/safe-action.ts
-import { createSafeActionClient } from "next-safe-action";
+import {
+  createSafeActionClient,
+  DEFAULT_SERVER_ERROR_MESSAGE,
+} from "next-safe-action";
 
 // Base client with standardized error handling
 export const actionClient = createSafeActionClient({
+  // Flatten validation errors by default so clients receive ergonomic field maps
+  defaultValidationErrorsShape: "flattened",
   // Handle server errors with proper logging and sanitization
-  handleServerError(e, utils) {
+  handleServerError(error, utils) {
     const { clientInput, bindArgsClientInputs, metadata, ctx } = utils;
-    
-    // Log full error details for debugging
+
     console.error("Server action error:", {
-      error: e.message,
-      stack: e.stack,
+      error: error.message,
+      stack: error.stack,
       clientInput,
+      bindArgsClientInputs,
       metadata,
+      ctx,
       timestamp: new Date().toISOString(),
     });
-    
-    // Send to monitoring service
-    if (process.env.NODE_ENV === 'production') {
-      // Sentry, DataDog, etc.
-      captureException(e, { extra: { clientInput, metadata } });
+
+    if (process.env.NODE_ENV === "production") {
+      // Forward structured payloads to your observability pipeline (Sentry, Datadog, etc.)
     }
-    
-    // Return sanitized error message to client
-    if (e instanceof ActionError && e.expose) {
-      return e.message;
+
+    if (error instanceof ActionError && error.expose) {
+      return error.message;
     }
-    
-    // Default secure message for production
-    return process.env.NODE_ENV === 'development' 
-      ? e.message 
-      : "An unexpected error occurred";
+
+    if (process.env.NODE_ENV === "development") {
+      return error.message;
+    }
+
+    return DEFAULT_SERVER_ERROR_MESSAGE;
   },
-  
-  // Configure default validation error shape
-  defaultValidationErrorsShape: "formatted",
 });
 
 // Custom error classes for controlled exposure
@@ -115,7 +116,7 @@ export const authActionClient = actionClient
       return next();
     }
     
-    const cookieStore = await cookies();
+    const cookieStore = cookies();
     const session = cookieStore.get("better-auth.session_token")?.value;
     
     if (!session) {
@@ -166,6 +167,9 @@ export const adminActionClient = authActionClient
 ### Rate Limiting Client
 ```typescript
 // lib/safe-action.ts (continued)
+import { headers } from "next/headers";
+
+// Prefer a durable store (Upstash, Redis, database) in real deployments.
 const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 
 export const rateLimitedActionClient = actionClient
@@ -370,6 +374,63 @@ export const createTodo = authActionClient
   });
 ```
 
+### Action with Bound Arguments
+```typescript
+// actions/onboarding-actions.ts
+"use server";
+
+import { z } from "zod";
+import { actionClient } from "@/lib/safe-action";
+
+const onboardingSchema = z.object({
+  username: z.string().min(3).max(30),
+});
+
+export const onboardUser = actionClient
+  .inputSchema(onboardingSchema)
+  .bindArgsSchemas<[userId: z.ZodString, inviteCode: z.ZodString]>([
+    z.string().uuid(),
+    z.string().length(8),
+  ])
+  .action(async ({ parsedInput: { username }, bindArgsParsedInputs: [userId, inviteCode] }) => {
+    await activateInvite({ userId, inviteCode, username });
+
+    return { success: true };
+  });
+
+// Client component - invalid bound args now throw ActionBindArgsValidationError server-side (v8+)
+const boundOnboardUser = onboardUser.bind(null, session.user.id, inviteCodeFromURL);
+```
+
+### Throw Validation Errors for Client-Side try/catch
+```typescript
+// actions/account-actions.ts
+"use server";
+
+import { z } from "zod";
+import { actionClient } from "@/lib/safe-action";
+
+const changeEmailSchema = z.object({
+  email: z.string().email("Enter a valid email"),
+});
+
+export const changeEmail = actionClient
+  .inputSchema(changeEmailSchema)
+  .action(
+    async ({ parsedInput: { email }, ctx }) => {
+      await updateUserEmail({ userId: ctx.user.id, email });
+
+      return { success: true };
+    },
+    {
+      throwValidationErrors: {
+        overrideErrorMessage: async (errors) =>
+          errors.email?._errors?.join(" ") ?? "Invalid email",
+      },
+    }
+  );
+```
+
 ## Client-Side Integration
 
 ### React Hook Form Integration
@@ -377,11 +438,11 @@ export const createTodo = authActionClient
 // components/forms/UpdateProfileForm.tsx
 "use client";
 
-import { useAction } from "next-safe-action/hooks";
-import { useForm } from "react-hook-form";
+import { useHookFormAction } from "@next-safe-action/adapter-react-hook-form/hooks";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { updateProfile } from "@/actions/user-actions";
 import { z } from "zod";
+import { toast } from "sonner"; // or your toast system of choice
+import { updateProfile } from "@/actions/user-actions";
 
 const formSchema = z.object({
   name: z.string().min(1).max(100),
@@ -392,83 +453,66 @@ const formSchema = z.object({
 type FormData = z.infer<typeof formSchema>;
 
 export function UpdateProfileForm({ user }: { user: User }) {
+  const { form, action, handleSubmitWithAction } = useHookFormAction(
+    updateProfile,
+    zodResolver(formSchema),
+    {
+      formProps: {
+        defaultValues: {
+          name: user.name,
+          email: user.email,
+          bio: user.bio ?? "",
+        },
+      },
+      actionProps: {
+        onSuccess: ({ data }) => {
+          toast.success("Profile updated successfully!");
+        },
+        onError: ({ error }) => {
+          if (error.serverError) {
+            toast.error(error.serverError);
+          }
+        },
+      },
+    }
+  );
+
   const {
     register,
-    handleSubmit,
     formState: { errors },
-    setError,
-  } = useForm<FormData>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: user.name,
-      email: user.email,
-      bio: user.bio || "",
-    },
-  });
-  
-  const { execute, status, result } = useAction(updateProfile, {
-    onSuccess: ({ data }) => {
-      toast.success("Profile updated successfully!");
-    },
-    onError: ({ error }) => {
-      if (error.validationErrors) {
-        // Map validation errors to form fields
-        Object.entries(error.validationErrors).forEach(([field, fieldErrors]) => {
-          if (fieldErrors._errors?.[0]) {
-            setError(field as keyof FormData, {
-              type: "server",
-              message: fieldErrors._errors[0],
-            });
-          }
-        });
-      } else if (error.serverError) {
-        toast.error(error.serverError);
-      }
-    },
-  });
-  
-  const onSubmit = handleSubmit((data) => {
-    execute(data);
-  });
-  
+  } = form;
+  const { isExecuting, hasSucceeded, result } = action;
+
   return (
-    <form onSubmit={onSubmit} className="space-y-4">
+    <form onSubmit={handleSubmitWithAction} className="space-y-4">
       <div>
         <label htmlFor="name">Name</label>
-        <input
-          {...register("name")}
-          id="name"
-          disabled={status === "executing"}
-        />
+        <input {...register("name")} id="name" disabled={isExecuting} />
+        {/* Validation errors are mapped automatically by the adapter */}
         {errors.name && <p className="error">{errors.name.message}</p>}
       </div>
-      
+
       <div>
         <label htmlFor="email">Email</label>
         <input
           {...register("email")}
           id="email"
           type="email"
-          disabled={status === "executing"}
+          disabled={isExecuting}
         />
         {errors.email && <p className="error">{errors.email.message}</p>}
       </div>
-      
+
       <div>
         <label htmlFor="bio">Bio</label>
-        <textarea
-          {...register("bio")}
-          id="bio"
-          disabled={status === "executing"}
-        />
+        <textarea {...register("bio")} id="bio" disabled={isExecuting} />
         {errors.bio && <p className="error">{errors.bio.message}</p>}
       </div>
-      
-      <button 
-        type="submit" 
-        disabled={status === "executing"}
-      >
-        {status === "executing" ? "Updating..." : "Update Profile"}
+
+      {result?.serverError && <p className="error">{result.serverError}</p>}
+
+      <button type="submit" disabled={isExecuting}>
+        {isExecuting ? "Updating..." : hasSucceeded ? "Saved" : "Update Profile"}
       </button>
     </form>
   );
@@ -485,12 +529,14 @@ import { createTodo, type Todo } from "@/actions/todo-actions";
 import { v4 as uuidv4 } from "uuid";
 
 export function TodoList({ initialTodos }: { initialTodos: Todo[] }) {
-  const { execute, optimisticState } = useOptimisticAction(
+  const { execute, optimisticState, isPending } = useOptimisticAction(
     createTodo,
-    initialTodos,
-    (currentState, input) => {
-      // Optimistically add the new todo
-      return [...currentState, input];
+    {
+      currentState: initialTodos,
+      updateFn: (state, input) => {
+        // Optimistically add the new todo immediately after execute()
+        return [...state, input];
+      },
     }
   );
   
@@ -512,6 +558,7 @@ export function TodoList({ initialTodos }: { initialTodos: Todo[] }) {
           <TodoItem key={todo.id} todo={todo} />
         ))}
       </div>
+      {isPending && <p className="text-muted">Saving…</p>}
     </div>
   );
 }
@@ -620,6 +667,9 @@ export function handleActionError(error: any): ActionErrorResponse {
 }
 ```
 
+- Pair `throwValidationErrors` with a `try/catch` on the client when you need to short-circuit UI logic instead of mapping field errors.
+- When `throwValidationErrors` is enabled, `useAction(...).result.serverError` remains `undefined`; rely on the thrown error or provided lifecycle callbacks for messaging.
+
 ## Testing Patterns
 
 ### Action Testing
@@ -719,23 +769,20 @@ describe('Auth Flow Integration', () => {
 ## Best Practices
 
 ### Do's ✅
-- Always use input validation with Zod schemas
-- Implement proper error handling and logging
-- Use middleware for cross-cutting concerns (auth, rate limiting)
-- Sanitize error messages in production
-- Include metadata for monitoring and debugging
-- Test actions with both valid and invalid inputs
-- Use optimistic updates for better UX
-- Implement proper TypeScript types throughout
+- Validate every input with Zod (or TypeSchema-supported) schemas and keep types in sync end-to-end
+- Configure explicit error handling: flatten validation errors, sanitize messages, and forward structured telemetry
+- Layer middleware for cross-cutting concerns (auth, rate limiting, metadata) instead of duplicating logic per action
+- Reach for the official adapters (`useHookFormAction`, `useHookFormOptimisticAction`) to wire forms and optimistic UI
+- Exercise both happy-path and failure-path tests (including optimistic flows and middleware behaviour)
+- Opt into `throwValidationErrors` when the caller should fail fast via try/catch rather than inspecting `validationErrors`
 
 ### Don'ts ❌
-- Never expose sensitive error details to client
-- Don't skip input validation for "trusted" inputs
-- Don't perform expensive operations without rate limiting
-- Avoid tight coupling between actions and specific UI components
-- Don't log sensitive data (passwords, tokens, PII)
-- Don't ignore middleware return values
-- Avoid blocking operations in middleware
+- Never expose sensitive error details or log credentials/tokens
+- Don't skip validation for "trusted" inputs or mutate schemas dynamically
+- Avoid expensive operations without rate limiting, backgrounding, or caching strategies
+- Keep actions decoupled from UI components and honour middleware return values
+- Don't depend on in-memory stores for rate limiting—back with Redis/Upstash (or similar) instead
+- Remember v8+ throws on invalid bind args; catch and log server-side to aid debugging
 
 ### Security Considerations
 - All server actions are public endpoints - treat them as such

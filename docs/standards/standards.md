@@ -43,7 +43,7 @@
 </conditional-block>
 
 <!-- Route to USING LIBRARIES standards -->
-<conditional-block task-condition="using|use|library|framework|stack-specific|drizzle|hono|next-safe-action|tanstack|query|vercel|ai|zustand|state|orpc|rpc|procedure">
+<conditional-block task-condition="using|use|library|framework|stack-specific|nextjs|next.js|app-router|rsc|partial-prerendering|ppr|drizzle|hono|next-safe-action|tanstack|query|vercel|ai|zustand|state|orpc|rpc|procedure|azure|aca|container-apps|front-door|key-vault|expo|react-native|mobile|eas">
   <context_fetcher_strategy>
     USE: @agent:context-fetcher
     REQUEST: "Get library usage routing from stack-specific/stack-specific.md"
